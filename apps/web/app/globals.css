@@ -24,13 +24,10 @@ a {
 }
 
 @media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
-
   .imgLight {
     display: none;
   }
+
   .imgDark {
     display: unset;
   }
@@ -66,6 +63,7 @@ a {
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
   }
+
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;

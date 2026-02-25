@@ -3,7 +3,7 @@ import express from 'express';
 import { AuthService } from './auth.service.js';
 import { RegisterDto, LoginDto } from './dto/auth.dto.js';
 
-@Controller('api/v1/auth')
+@Controller('auth')
 export class AuthController {
     constructor(private readonly authService: AuthService) { }
 

@@ -44,7 +44,7 @@ export class AuthService {
             return { tenant, user };
         });
 
-        return this.generateTokens(result.user.id, result.tenant.id, result.user.role);
+        return this.generateTokens(result.user.id, result.tenant.id, result.user.role, result.user.email);
     }
 
     async login(dto: LoginDto) {
@@ -56,11 +56,11 @@ export class AuthService {
             throw new UnauthorizedException('INVALID_CREDENTIALS'); // 401 unauthenticated [cite: 70]
         }
 
-        return this.generateTokens(user.id, user.tenantId, user.role);
+        return this.generateTokens(user.id, user.tenantId, user.role, user.email);
     }
 
-    private async generateTokens(userId: string, tenantId: string, role: string) {
-        const payload = { userId, tenantId, role };
+    private async generateTokens(userId: string, tenantId: string, role: string, email: string) {
+        const payload = { sub: userId, email, tenantId, role };
 
         const [accessToken, refreshToken] = await Promise.all([
             this.jwtService.signAsync(payload, { expiresIn: '15m' }), // 15-minute expiry 
