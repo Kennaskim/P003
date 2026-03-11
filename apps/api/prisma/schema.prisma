@@ -52,32 +52,33 @@ model Tenant {
   id        String    @id @default(uuid()) // [cite: 73]
   name      String
   email     String    @unique
-  phone     String?   // E.164 format: +254XXXXXXXXX [cite: 76]
+  phone     String? // E.164 format: +254XXXXXXXXX [cite: 76]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime? // Soft delete 
 
-  users              User[]
-  properties         Property[]
-  units              Unit[]
-  renters            Renter[]
-  rentalAgreements   RentalAgreement[]
-  rentInvoices       RentInvoice[]
-  payments           Payment[]
+  users               User[]
+  properties          Property[]
+  units               Unit[]
+  renters             Renter[]
+  rentalAgreements    RentalAgreement[]
+  rentInvoices        RentInvoice[]
+  payments            Payment[]
   maintenanceRequests MaintenanceRequest[]
+  documents           Document[]
 }
 
 model User {
   id        String    @id @default(uuid())
-  tenantId  String    // Critical multi-tenancy enforcement 
+  tenantId  String // Critical multi-tenancy enforcement 
   email     String    @unique
-  password  String    // Hashed
+  password  String // Hashed
   role      UserRole
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  tenant    Tenant    @relation(fields: [tenantId], references: [id])
+  tenant Tenant @relation(fields: [tenantId], references: [id])
 
   @@index([tenantId]) // [cite: 200]
 }
@@ -86,14 +87,14 @@ model Property {
   id        String    @id @default(uuid())
   tenantId  String
   name      String
-  address   String    // Estate/area + town structure [cite: 126]
+  address   String // Estate/area + town structure [cite: 126]
   type      String
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  tenant    Tenant    @relation(fields: [tenantId], references: [id])
-  units     Unit[]
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  units  Unit[]
 
   @@index([tenantId])
 }
@@ -102,15 +103,15 @@ model Unit {
   id         String     @id @default(uuid())
   tenantId   String
   propertyId String
-  name       String     // e.g., "A1", "Bedsitter 4"
-  rentAmount Int        // Stored as integer KES 
+  name       String // e.g., "A1", "Bedsitter 4"
+  rentAmount Int // Stored as integer KES 
   status     UnitStatus @default(VACANT)
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
   deletedAt  DateTime?
 
-  tenant           Tenant             @relation(fields: [tenantId], references: [id])
-  property         Property           @relation(fields: [propertyId], references: [id])
+  tenant           Tenant               @relation(fields: [tenantId], references: [id])
+  property         Property             @relation(fields: [propertyId], references: [id])
   rentalAgreements RentalAgreement[]
   maintenanceReqs  MaintenanceRequest[]
 
@@ -119,16 +120,16 @@ model Unit {
 }
 
 model Renter {
-  id               String    @id @default(uuid())
+  id               String       @id @default(uuid())
   tenantId         String
   firstName        String
   lastName         String
-  phone            String    @unique // E.164 format
-  nationalId       String    // 8 digits standard [cite: 125]
+  phone            String       @unique // E.164 format
+  nationalId       String // 8 digits standard [cite: 125]
   emergencyContact String?
   status           RenterStatus @default(ACTIVE)
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
   deletedAt        DateTime?
 
   tenant           Tenant            @relation(fields: [tenantId], references: [id])
@@ -144,7 +145,7 @@ model RentalAgreement {
   renterId   String
   startDate  DateTime
   endDate    DateTime? // Nullable since it's a monthly rolling agreement [cite: 8, 124]
-  rentAmount Int       // Locked in amount for this specific agreement
+  rentAmount Int // Locked in amount for this specific agreement
   deposit    Int
   isActive   Boolean   @default(true)
   createdAt  DateTime  @default(now())
@@ -184,11 +185,11 @@ model Payment {
   rentalAgreementId String
   rentInvoiceId     String?
   amount            Int
-  method            String        // "MPESA" or "MANUAL"
+  method            String // "MPESA" or "MANUAL"
   mpesaReceipt      String?       @unique // E.g., QWE123RTY
   checkoutRequestId String?       @unique // Daraja STK Push tracking [cite: 209]
   status            PaymentStatus @default(PENDING)
-  rawResponse       Json?         // Audit log of Daraja response 
+  rawResponse       Json? // Audit log of Daraja response 
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
@@ -206,7 +207,7 @@ model MaintenanceRequest {
   unitId      String
   category    String
   description String
-  urgency     String            // E.g., Critical, High, Medium, Low [cite: 327]
+  urgency     String // E.g., Critical, High, Medium, Low [cite: 327]
   status      MaintenanceStatus @default(SUBMITTED)
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
@@ -216,4 +217,23 @@ model MaintenanceRequest {
 
   @@index([tenantId])
   @@index([unitId, status]) // Active work orders per unit [cite: 200]
+}
+
+model Document {
+  id         String    @id @default(uuid())
+  tenantId   String
+  name       String // Original file name (e.g., "signed_agreement.pdf")
+  fileKey    String // The unique S3/R2 object key
+  fileType   String // MIME type (e.g., "application/pdf")
+  size       Int // Size in bytes
+  entityType String? // e.g., "PROPERTY", "RENTER", "MAINTENANCE"
+  entityId   String? // The ID of the related entity
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+  @@index([entityType, entityId])
 }

@@ -7,7 +7,10 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { TenantInterceptor } from '../../common/interceptors/tenant.interceptor';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '../../generated/prisma/client.js';
+import { Throttle, SkipThrottle } from '@nestjs/throttler';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiTags('M-Pesa Payments')
 @Controller('mpesa')
 export class MpesaController {
     constructor(
@@ -15,6 +18,9 @@ export class MpesaController {
         private eventEmitter: EventEmitter2,
     ) { }
 
+    @ApiOperation({ summary: 'Initiate a Daraja STK Push to a tenant phone' })
+    @ApiBearerAuth()
+    @Throttle({ default: { limit: 10, ttl: 60000 } })
     @UseGuards(JwtAuthGuard, RolesGuard)
     @UseInterceptors(TenantInterceptor)
     @Roles(UserRole.SUPER_ADMIN, UserRole.PROPERTY_MANAGER, UserRole.LANDLORD, UserRole.TENANT)
@@ -24,6 +30,8 @@ export class MpesaController {
         return { success: true, data, message: 'STK Push sent to user phone' };
     }
 
+    @ApiOperation({ summary: 'Safaricom Webhook Callback (Public)' })
+    @SkipThrottle()
     // Public webhook endpoint for Safaricom. No JWT Guards here!
     @Post('callback')
     async handleCallback(@Body() dto: MpesaCallbackDto) {

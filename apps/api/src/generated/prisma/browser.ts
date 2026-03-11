@@ -62,3 +62,8 @@ export type Payment = Prisma.PaymentModel
  * 
  */
 export type MaintenanceRequest = Prisma.MaintenanceRequestModel
+/**
+ * Model Document
+ * 
+ */
+export type Document = Prisma.DocumentModel

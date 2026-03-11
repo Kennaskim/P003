@@ -7,7 +7,9 @@ import {
     Home,
     LayoutDashboard,
     Settings,
-    Users
+    Users,
+    Wrench,
+    FileText
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +20,9 @@ const navigation = [
     { name: "Renters", href: "/renters", icon: Users },
     { name: "Agreements", href: "/agreements", icon: FileSignature },
     { name: "Billing & Invoices", href: "/billing", icon: CreditCard },
+    { name: "Maintenance", href: "/maintenance", icon: Wrench },
+    { name: "Documents", href: "/documents", icon: FileText },
+    { name: "Reports", href: "/reports", icon: FileText },
     { name: "Settings", href: "/settings", icon: Settings },
 ];
 

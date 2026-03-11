@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Body, Param, Put, UseGuards, UseInterceptors } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { RentInvoicesService } from './rent-invoices.service';
 import { CreateRentInvoiceDto, UpdateRentInvoiceDto } from './dto/rent-invoice.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -7,6 +8,8 @@ import { TenantInterceptor } from '../../common/interceptors/tenant.interceptor'
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '../../generated/prisma/client.js';
 
+@ApiTags('Billing & Invoices')
+@ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @UseInterceptors(TenantInterceptor)
 @Roles(UserRole.SUPER_ADMIN, UserRole.PROPERTY_MANAGER, UserRole.LANDLORD, UserRole.ACCOUNTANT)
@@ -14,24 +17,28 @@ import { UserRole } from '../../generated/prisma/client.js';
 export class RentInvoicesController {
     constructor(private readonly rentInvoicesService: RentInvoicesService) { }
 
+    @ApiOperation({ summary: 'Manually generate a rent invoice' })
     @Post()
     async create(@Body() createDto: CreateRentInvoiceDto) {
         const data = await this.rentInvoicesService.create(createDto);
         return { success: true, data, message: 'Invoice generated successfully' };
     }
 
+    @ApiOperation({ summary: 'Get all invoices across all tenants' })
     @Get()
     async findAll() {
         const data = await this.rentInvoicesService.findAll();
         return { success: true, data };
     }
 
+    @ApiOperation({ summary: 'Get a specific rent invoice by ID' })
     @Get(':id')
     async findOne(@Param('id') id: string) {
         const data = await this.rentInvoicesService.findOne(id);
         return { success: true, data };
     }
 
+    @ApiOperation({ summary: 'Update a specific rent invoice (e.g., mark as paid)' })
     @Put(':id')
     async update(@Param('id') id: string, @Body() updateDto: UpdateRentInvoiceDto) {
         const data = await this.rentInvoicesService.update(id, updateDto);

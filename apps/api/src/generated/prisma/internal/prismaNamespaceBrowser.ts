@@ -59,7 +59,8 @@ export const ModelName = {
   RentalAgreement: 'RentalAgreement',
   RentInvoice: 'RentInvoice',
   Payment: 'Payment',
-  MaintenanceRequest: 'MaintenanceRequest'
+  MaintenanceRequest: 'MaintenanceRequest',
+  Document: 'Document'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -214,6 +215,23 @@ export const MaintenanceRequestScalarFieldEnum = {
 } as const
 
 export type MaintenanceRequestScalarFieldEnum = (typeof MaintenanceRequestScalarFieldEnum)[keyof typeof MaintenanceRequestScalarFieldEnum]
+
+
+export const DocumentScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  name: 'name',
+  fileKey: 'fileKey',
+  fileType: 'fileType',
+  size: 'size',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+} as const
+
+export type DocumentScalarFieldEnum = (typeof DocumentScalarFieldEnum)[keyof typeof DocumentScalarFieldEnum]
 
 
 export const SortOrder = {
