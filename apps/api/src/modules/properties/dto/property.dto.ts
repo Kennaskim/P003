@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
 export class CreatePropertyDto {
     @ApiProperty({ example: 'Sunset Apartments', description: 'Name of the property' })
     @IsString()
@@ -18,4 +18,4 @@ export class CreatePropertyDto {
     type: string; // e.g., "Commercial", "Residential", "Mixed"
 }
 
-export class UpdatePropertyDto extends CreatePropertyDto { }
+export class UpdatePropertyDto extends PartialType(CreatePropertyDto) { }

@@ -9,7 +9,7 @@ export class PropertiesService {
     async create(dto: CreatePropertyDto) {
         // tenantId is injected automatically by our Prisma extension!
         return this.prisma.tenantClient.property.create({
-            data: dto as any,
+            data: dto
         });
     }
 

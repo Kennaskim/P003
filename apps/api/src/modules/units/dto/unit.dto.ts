@@ -1,5 +1,5 @@
 import { IsInt, IsNotEmpty, IsString, IsUUID, Min } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
 export class CreateUnitDto {
     @ApiProperty({ example: 'uuid-of-property', description: 'ID of the parent property' })
     @IsUUID()
@@ -17,4 +17,4 @@ export class CreateUnitDto {
     rentAmount: number; // Stored as integer KES
 }
 
-export class UpdateUnitDto extends CreateUnitDto { }
+export class UpdateUnitDto extends PartialType(CreateUnitDto) { }

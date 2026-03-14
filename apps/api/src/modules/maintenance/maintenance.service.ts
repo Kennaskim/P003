@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../../../prisma/prisma.service';
-import { CreateMaintenanceDto, UpdateMaintenanceDto } from './dto/maintenance.dto';
+import { PrismaService } from '../../../prisma/prisma.service.js';
+import { CreateMaintenanceDto, UpdateMaintenanceDto } from './dto/maintenance.dto.js';
 
 @Injectable()
 export class MaintenanceService {
@@ -15,7 +15,7 @@ export class MaintenanceService {
         if (!unit) throw new NotFoundException('UNIT_NOT_FOUND');
 
         return this.prisma.tenantClient.maintenanceRequest.create({
-            data: dto as any,
+            data: dto,
         });
     }
 
@@ -30,12 +30,22 @@ export class MaintenanceService {
         });
     }
 
-    async updateStatus(id: string, dto: UpdateMaintenanceDto) {
+    async findOne(id: string) {
         const request = await this.prisma.tenantClient.maintenanceRequest.findFirst({
             where: { id },
+            include: {
+                unit: {
+                    include: { property: true },
+                },
+            },
         });
 
         if (!request) throw new NotFoundException('MAINTENANCE_REQUEST_NOT_FOUND');
+        return request;
+    }
+
+    async update(id: string, dto: UpdateMaintenanceDto) {
+        await this.findOne(id); // Ensure it exists and belongs to the tenant
 
         return this.prisma.tenantClient.maintenanceRequest.update({
             where: { id },

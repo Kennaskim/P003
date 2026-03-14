@@ -15,7 +15,7 @@ export class UnitsService {
         if (!property) throw new NotFoundException('PROPERTY_NOT_FOUND');
 
         return this.prisma.tenantClient.unit.create({
-            data: dto as any,
+            data: dto
         });
     }
 

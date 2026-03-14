@@ -1,14 +1,15 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { v4 as uuidv4 } from 'uuid';
-import { PrismaService } from '../../../prisma/prisma.service';
-import { RequestUploadUrlDto, ConfirmUploadDto } from './dto/file.dto';
-import { tenantStorage } from '../../common/storage/tenant.storage';
+import { PrismaService } from '../../../prisma/prisma.service.js';
+import { RequestUploadUrlDto, ConfirmUploadDto } from './dto/file.dto.js';
+import { tenantStorage } from '../../common/storage/tenant.storage.js';
 
 @Injectable()
 export class FilesService {
+    private readonly logger = new Logger(FilesService.name); // ✅ Added NestJS Logger
     private s3Client: S3Client;
     private bucketName: string;
 
@@ -31,8 +32,9 @@ export class FilesService {
         const tenantId = tenantStorage.getStore()?.tenantId;
         if (!tenantId) throw new InternalServerErrorException('Missing tenant context');
 
-        // Isolate files in the bucket using a prefix: tenantId/uuid-filename
-        const fileKey = `${tenantId}/${uuidv4()}-${dto.fileName.replace(/\s+/g, '_')}`;
+        // Clean filename and isolate files in the bucket using a prefix: tenantId/uuid-filename
+        const cleanFileName = dto.fileName.replace(/\s+/g, '_');
+        const fileKey = `${tenantId}/${uuidv4()}-${cleanFileName}`;
 
         const command = new PutObjectCommand({
             Bucket: this.bucketName,
@@ -45,6 +47,7 @@ export class FilesService {
             const presignedUrl = await getSignedUrl(this.s3Client, command, { expiresIn: 300 });
             return { presignedUrl, fileKey };
         } catch (error) {
+            this.logger.error('Failed to generate upload URL', error);
             throw new InternalServerErrorException('Failed to generate upload URL');
         }
     }
@@ -62,11 +65,10 @@ export class FilesService {
                     size: dto.fileSize,
                     entityType: dto.entityType,
                     entityId: dto.entityId,
-                    tenantId,
                 },
             });
         } catch (error) {
-            console.error('confirmUpload failed:', error);
+            this.logger.error('confirmUpload failed:', error); // ✅ Using Logger instead of console.error
             throw new InternalServerErrorException('Failed to save document record');
         }
     }
@@ -96,6 +98,7 @@ export class FilesService {
             const url = await getSignedUrl(this.s3Client, command, { expiresIn: 300 });
             return { url, name: document.name };
         } catch (error) {
+            this.logger.error('Failed to generate download URL', error);
             throw new InternalServerErrorException('Failed to generate download URL');
         }
     }

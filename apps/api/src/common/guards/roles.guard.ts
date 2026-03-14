@@ -1,8 +1,8 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { UserRole } from '../../generated/prisma/client.js';
-import { ROLES_KEY } from '../decorators/roles.decorator';
-import { JwtPayload } from '../decorators/current-user.decorator';
+import { ROLES_KEY } from '../decorators/roles.decorator.js';
+import { AuthUser } from '../decorators/current-user.decorator.js';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -18,7 +18,7 @@ export class RolesGuard implements CanActivate {
             return true; // No roles restricted on this route
         }
 
-        const { user } = context.switchToHttp().getRequest<{ user: JwtPayload }>();
+        const { user } = context.switchToHttp().getRequest<{ user: AuthUser }>();
 
         if (!requiredRoles.includes(user.role as UserRole)) {
             throw new ForbiddenException('INSUFFICIENT_PERMISSIONS');

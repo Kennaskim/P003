@@ -1,8 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { PrismaService } from '../../../prisma/prisma.service';
-import { tenantStorage } from '../../common/storage/tenant.storage';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
+import { PrismaService } from '../../../prisma/prisma.service.js';
+import { tenantStorage } from '../../common/storage/tenant.storage.js';
 
 @Injectable()
 export class BillingCronService {
@@ -10,13 +11,15 @@ export class BillingCronService {
 
     constructor(
         private prisma: PrismaService,
-        private eventEmitter: EventEmitter2 // <-- Inject the event emitter
+        // Using BullMQ instead of EventEmitter2
+        @InjectQueue('sms') private readonly smsQueue: Queue
     ) { }
 
     @Cron('0 0 1 * *', { timeZone: 'Africa/Nairobi' })
     async generateMonthlyInvoices() {
         this.logger.log('Starting automated monthly rent invoice generation...');
 
+        // Query active agreements
         const activeAgreements = await this.prisma.client.rentalAgreement.findMany({
             where: { isActive: true },
             include: {
@@ -48,17 +51,20 @@ export class BillingCronService {
                                 rentalAgreementId: agreement.id,
                                 amount: agreement.rentAmount,
                                 dueDate: dueDate.toISOString(),
-                            } as any,
+                            },
                         });
                         successCount++;
 
-                        // <-- FIRE THE SMS NOTIFICATION EVENT -->
-                        this.eventEmitter.emit('invoice.created', {
+                        // Push the SMS notification job to BullMQ
+                        await this.smsQueue.add('send-invoice-sms', {
                             renterName: agreement.renter.firstName,
                             phone: agreement.renter.phone,
-                            amount: agreement.rentAmount,
+                            amountInCents: agreement.rentAmount,
                             dueDate: dueDate.toISOString(),
                             unitName: agreement.unit.name,
+                        }, {
+                            attempts: 3,
+                            backoff: { type: 'exponential', delay: 5000 }
                         });
                     }
                 });

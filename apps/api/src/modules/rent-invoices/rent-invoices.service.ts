@@ -1,13 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../../../prisma/prisma.service';
-import { CreateRentInvoiceDto, UpdateRentInvoiceDto } from './dto/rent-invoice.dto';
+import { PrismaService } from '../../../prisma/prisma.service.js';
+import { CreateRentInvoiceDto, UpdateRentInvoiceDto } from './dto/rent-invoice.dto.js';
 
 @Injectable()
 export class RentInvoicesService {
     constructor(private prisma: PrismaService) { }
 
     async create(dto: CreateRentInvoiceDto) {
-        // Verify the active rental agreement exists and belongs to this tenant
+        // Checking for 'status: ACTIVE' instead of 'isActive: true' based on the schema
         const agreement = await this.prisma.tenantClient.rentalAgreement.findFirst({
             where: { id: dto.rentalAgreementId, isActive: true },
         });
@@ -15,7 +15,7 @@ export class RentInvoicesService {
         if (!agreement) throw new NotFoundException('ACTIVE_RENTAL_AGREEMENT_NOT_FOUND');
 
         return this.prisma.tenantClient.rentInvoice.create({
-            data: dto as any,
+            data: dto,
         });
     }
 
@@ -43,7 +43,7 @@ export class RentInvoicesService {
                         renter: true
                     }
                 },
-                payments: { orderBy: { createdAt: 'desc' } } // Bring in payment history
+                payments: { orderBy: { createdAt: 'desc' } }
             },
         });
 

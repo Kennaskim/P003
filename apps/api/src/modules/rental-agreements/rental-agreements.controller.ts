@@ -1,12 +1,12 @@
 import { Controller, Get, Post, Body, Param, UseGuards, UseInterceptors, Patch } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { RentalAgreementsService } from './rental-agreements.service';
-import { CreateRentalAgreementDto } from './dto/rental-agreement.dto';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../../common/guards/roles.guard';
-import { TenantInterceptor } from '../../common/interceptors/tenant.interceptor';
-import { Roles } from '../../common/decorators/roles.decorator';
-import { UserRole } from '../../generated/prisma/client';
+import { RentalAgreementsService } from './rental-agreements.service.js';
+import { CreateRentalAgreementDto } from './dto/rental-agreement.dto.js';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
+import { RolesGuard } from '../../common/guards/roles.guard.js';
+import { TenantInterceptor } from '../../common/interceptors/tenant.interceptor.js';
+import { Roles } from '../../common/decorators/roles.decorator.js';
+import { UserRole } from '../../generated/prisma/client.js';
 
 @ApiTags('Rental Agreements')
 @ApiBearerAuth()

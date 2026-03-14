@@ -1,11 +1,11 @@
-import { Controller, Get, Post, Body, Param, Put, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
-import { RentersService } from './renters.service';
-import { CreateRenterDto, UpdateRenterDto } from './dto/renter.dto';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../../common/guards/roles.guard';
-import { TenantInterceptor } from '../../common/interceptors/tenant.interceptor';
-import { Roles } from '../../common/decorators/roles.decorator';
+import { RentersService } from './renters.service.js';
+import { CreateRenterDto, UpdateRenterDto } from './dto/renter.dto.js';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
+import { RolesGuard } from '../../common/guards/roles.guard.js';
+import { TenantInterceptor } from '../../common/interceptors/tenant.interceptor.js';
+import { Roles } from '../../common/decorators/roles.decorator.js';
 import { UserRole } from '../../generated/prisma/client.js';
 
 @ApiTags('Renters')
@@ -45,9 +45,17 @@ export class RentersController {
     @ApiOperation({ summary: 'Update a specific renter' })
     @ApiResponse({ status: 200, description: 'Renter updated successfully.' })
     @ApiResponse({ status: 404, description: 'Renter not found.' })
-    @Put(':id')
+    @Patch(':id')
     async update(@Param('id') id: string, @Body() updateRenterDto: UpdateRenterDto) {
         const data = await this.rentersService.update(id, updateRenterDto);
         return { success: true, data, message: 'Renter updated successfully' };
+    }
+
+    @ApiOperation({ summary: 'Delete a renter (Soft Delete)' })
+    @ApiResponse({ status: 200, description: 'Renter deleted successfully.' })
+    @Delete(':id')
+    async remove(@Param('id') id: string) {
+        await this.rentersService.remove(id);
+        return { success: true, message: 'Renter deleted successfully' };
     }
 }

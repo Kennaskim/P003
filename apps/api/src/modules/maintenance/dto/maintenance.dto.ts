@@ -1,6 +1,6 @@
 import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
-import { MaintenanceStatus } from '../../../generated/prisma/enums';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { MaintenanceStatus } from '../../../generated/prisma/client.js';
+import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 
 export class CreateMaintenanceDto {
     @ApiProperty({ example: 'uuid-of-unit' })
@@ -24,7 +24,7 @@ export class CreateMaintenanceDto {
     urgency: string; // Critical, High, Medium, Low
 }
 
-export class UpdateMaintenanceDto {
+export class UpdateMaintenanceDto extends PartialType(CreateMaintenanceDto) {
     @ApiPropertyOptional({ enum: MaintenanceStatus, example: 'IN_PROGRESS' })
     @IsEnum(MaintenanceStatus)
     @IsOptional()

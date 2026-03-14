@@ -1,20 +1,28 @@
 import { IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, Matches, Min } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+
 export class InitiateStkPushDto {
     @ApiProperty({ example: 'uuid-of-invoice' })
     @IsUUID()
     @IsNotEmpty()
     rentInvoiceId: string;
 
-    @ApiProperty({ example: '+254700000000', description: 'Tenant Safaricom number' })
+    @ApiProperty({ example: '254700000000', description: 'Tenant Safaricom number (254...)' })
     @IsString()
-    @Matches(/^\+254[17]\d{8}$/, { message: 'Phone number must be in format +2547XXXXXXXX' })
+    // Daraja expects the format to start directly with 254, no '+'
+    @Matches(/^254[17]\d{8}$/, { message: 'Phone number must be in format 2547XXXXXXXX or 2541XXXXXXXX' })
     phone: string;
 
-    @ApiProperty({ example: 15000, description: 'Amount to charge via M-Pesa (KES)' })
+    @ApiProperty({ example: 1500000, description: 'Amount to charge via M-Pesa in CENTS' })
     @IsInt()
-    @Min(1)
-    amount: number; // Integer KES
+    @Min(100) // Minimum 1 KES
+    amountInCents: number;
+}
+
+// Strictly typing the callback items to eliminate 'any'
+export class MpesaCallbackItemDto {
+    Name: string;
+    Value?: string | number;
 }
 
 export class MpesaCallbackDto {
@@ -26,7 +34,7 @@ export class MpesaCallbackDto {
             ResultCode: number;
             ResultDesc: string;
             CallbackMetadata?: {
-                Item: { Name: string; Value: any }[];
+                Item: MpesaCallbackItemDto[];
             };
         };
     };

@@ -1,11 +1,11 @@
 import { Controller, Get, Post, Body, Param, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { FilesService } from './files.service';
-import { RequestUploadUrlDto, ConfirmUploadDto } from './dto/file.dto';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../../common/guards/roles.guard';
-import { TenantInterceptor } from '../../common/interceptors/tenant.interceptor';
-import { Roles } from '../../common/decorators/roles.decorator';
+import { FilesService } from './files.service.js';
+import { RequestUploadUrlDto, ConfirmUploadDto } from './dto/file.dto.js';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
+import { RolesGuard } from '../../common/guards/roles.guard.js';
+import { TenantInterceptor } from '../../common/interceptors/tenant.interceptor.js';
+import { Roles } from '../../common/decorators/roles.decorator.js';
 import { UserRole } from '../../generated/prisma/client.js';
 
 @ApiTags('Files Management')
@@ -13,7 +13,7 @@ import { UserRole } from '../../generated/prisma/client.js';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @UseInterceptors(TenantInterceptor)
 @Roles(UserRole.SUPER_ADMIN, UserRole.PROPERTY_MANAGER, UserRole.LANDLORD)
-@Controller('files')
+@Controller('v1/files')
 export class FilesController {
     constructor(private readonly filesService: FilesService) { }
 

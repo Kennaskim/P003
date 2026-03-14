@@ -1,58 +1,54 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { OnEvent } from '@nestjs/event-emitter';
-// @ts-ignore - africastalking doesn't have official types
-import * as Africastalking from 'africastalking';
+import AfricasTalking from 'africastalking';
 
 @Injectable()
 export class SmsService {
     private readonly logger = new Logger(SmsService.name);
-    private africastalking: any;
+    private readonly sms: any;
+    private readonly isDev: boolean;
 
-    constructor(private config: ConfigService) {
+    constructor(private configService: ConfigService) {
+        this.isDev = this.configService.get<string>('NODE_ENV') !== 'production';
+
+        // Initialize Africa's Talking SDK
         const credentials = {
-            apiKey: this.config.getOrThrow<string>('AT_API_KEY'),
-            username: this.config.getOrThrow<string>('AT_USERNAME'),
+            apiKey: this.configService.getOrThrow<string>('AT_API_KEY'),
+            username: this.configService.getOrThrow<string>('AT_USERNAME'),
         };
-        this.africastalking = Africastalking(credentials);
+
+        const at = AfricasTalking(credentials);
+        this.sms = at.SMS;
     }
 
-    async sendSms(to: string, message: string) {
-        try {
-            const sms = this.africastalking.SMS;
-            const response = await sms.send({
-                to: [to],
-                message: message,
-                // Optional: If you have a registered alphanumeric sender ID, add it to your .env
-                from: this.config.get<string>('AT_SENDER_ID'),
-            });
-            this.logger.log(`SMS dispatched to ${to}`);
-            return response;
-        } catch (error) {
-            this.logger.error(`Failed to send SMS to ${to}`, error);
+    /**
+     * Sends an SMS message to a specific Kenyan phone number
+     */
+    async sendSms(to: string, message: string): Promise<boolean> {
+        // Ensure the phone number has the + prefix for Africa's Talking
+        const formattedPhone = to.startsWith('+') ? to : `+${to}`;
+
+        this.logger.log(`Preparing to send SMS to ${formattedPhone}`);
+
+        if (this.isDev) {
+            this.logger.debug(`[DEV MOCK SMS] To: ${formattedPhone} | Message: ${message}`);
+            return true; // Don't actually spend SMS credits in development
         }
-    }
 
-    // Listen for the event emitted by the Billing Cron Job
-    @OnEvent('invoice.created')
-    async handleInvoiceCreatedEvent(payload: {
-        renterName: string;
-        phone: string;
-        amount: number;
-        dueDate: string;
-        unitName: string;
-    }) {
-        // Format the integer KES nicely for the SMS
-        const formattedAmount = new Intl.NumberFormat('en-KE', {
-            style: 'currency',
-            currency: 'KES',
-            minimumFractionDigits: 0
-        }).format(payload.amount);
+        try {
+            const options = {
+                to: [formattedPhone],
+                message: message,
+                // Uncomment and add your registered shortcode/alphanumeric sender ID here if you have one
+                // from: this.configService.get<string>('AT_SENDER_ID'), 
+            };
 
-        const formattedDate = new Date(payload.dueDate).toLocaleDateString('en-KE');
-
-        const message = `Hello ${payload.renterName}, your rent invoice for ${payload.unitName} is ready. Amount due is ${formattedAmount} by ${formattedDate}. Please log in or wait for the M-Pesa prompt.`;
-
-        await this.sendSms(payload.phone, message);
+            const response = await this.sms.send(options);
+            this.logger.log(`SMS sent successfully to ${formattedPhone}. AT Response:`, response);
+            return true;
+        } catch (error) {
+            this.logger.error(`Failed to send SMS to ${formattedPhone}`, error);
+            throw error; // Let BullMQ catch this so it can retry the job
+        }
     }
 }

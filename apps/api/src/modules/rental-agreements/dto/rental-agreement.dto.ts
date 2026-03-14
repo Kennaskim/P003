@@ -1,5 +1,6 @@
-import { IsDateString, IsInt, IsNotEmpty, IsUUID, Min } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsDateString, IsInt, IsNotEmpty, IsUUID, Min, IsOptional, IsBoolean } from 'class-validator';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
+
 export class CreateRentalAgreementDto {
     @ApiProperty({ example: 'uuid-of-unit', description: 'The vacant unit ID' })
     @IsUUID()
@@ -25,4 +26,11 @@ export class CreateRentalAgreementDto {
     @IsInt()
     @Min(0)
     deposit: number; // Stored as integer KES
+}
+
+export class UpdateRentalAgreementDto extends PartialType(CreateRentalAgreementDto) {
+    @ApiProperty({ example: false, required: false })
+    @IsOptional()
+    @IsBoolean()
+    isActive?: boolean;
 }

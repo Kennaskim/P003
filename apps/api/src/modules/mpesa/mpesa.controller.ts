@@ -1,21 +1,23 @@
-import { Controller, Post, Body, UseGuards, UseInterceptors } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { MpesaService } from './mpesa.service';
-import { InitiateStkPushDto, MpesaCallbackDto } from './dto/mpesa.dto';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../../common/guards/roles.guard';
-import { TenantInterceptor } from '../../common/interceptors/tenant.interceptor';
-import { Roles } from '../../common/decorators/roles.decorator';
+import { Controller, Post, Body, UseGuards, UseInterceptors, HttpCode, HttpStatus } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
+import { MpesaService } from './mpesa.service.js';
+import { InitiateStkPushDto, MpesaCallbackDto } from './dto/mpesa.dto.js';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
+import { RolesGuard } from '../../common/guards/roles.guard.js';
+import { TenantInterceptor } from '../../common/interceptors/tenant.interceptor.js';
+import { Roles } from '../../common/decorators/roles.decorator.js';
 import { UserRole } from '../../generated/prisma/client.js';
 import { Throttle, SkipThrottle } from '@nestjs/throttler';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
 @ApiTags('M-Pesa Payments')
-@Controller('mpesa')
+@Controller('v1/mpesa')
 export class MpesaController {
     constructor(
         private readonly mpesaService: MpesaService,
-        private eventEmitter: EventEmitter2,
+        // Inject the BullMQ queue
+        @InjectQueue('mpesa-callbacks') private readonly mpesaQueue: Queue,
     ) { }
 
     @ApiOperation({ summary: 'Initiate a Daraja STK Push to a tenant phone' })
@@ -32,11 +34,15 @@ export class MpesaController {
 
     @ApiOperation({ summary: 'Safaricom Webhook Callback (Public)' })
     @SkipThrottle()
-    // Public webhook endpoint for Safaricom. No JWT Guards here!
     @Post('callback')
+    @HttpCode(HttpStatus.OK)
     async handleCallback(@Body() dto: MpesaCallbackDto) {
-        // Fire the event and return 200 OK immediately to prevent Safaricom timeouts
-        this.eventEmitter.emit('mpesa.callback', dto);
+        // Drop the payload into Redis and return 200 OK instantly
+        await this.mpesaQueue.add('process-stk-result', dto, {
+            attempts: 3,
+            backoff: { type: 'exponential', delay: 2000 },
+        });
+
         return { ResultCode: 0, ResultDesc: 'Accepted' };
     }
 }

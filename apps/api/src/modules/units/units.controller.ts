@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Put, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { UnitsService } from './units.service';
 import { CreateUnitDto, UpdateUnitDto } from './dto/unit.dto';
@@ -32,7 +32,7 @@ export class UnitsController {
     }
 
     @ApiOperation({ summary: 'Update an existing unit' })
-    @Put(':id')
+    @Patch(':id')
     async update(@Param('id') id: string, @Body() updateUnitDto: UpdateUnitDto) {
         const data = await this.unitsService.update(id, updateUnitDto);
         return { success: true, data };

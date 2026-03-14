@@ -1,10 +1,9 @@
 import { Injectable, Logger, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
-import { OnEvent } from '@nestjs/event-emitter';
 import { firstValueFrom } from 'rxjs';
-import { PrismaService } from '../../../prisma/prisma.service';
-import { InitiateStkPushDto, MpesaCallbackDto } from './dto/mpesa.dto';
+import { PrismaService } from '../../../prisma/prisma.service.js';
+import { InitiateStkPushDto } from './dto/mpesa.dto.js';
 import { PaymentStatus } from '../../generated/prisma/client.js';
 
 @Injectable()
@@ -50,8 +49,8 @@ export class MpesaService {
         const timestamp = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14);
         const password = Buffer.from(`${shortcode}${passkey}${timestamp}`).toString('base64');
 
-        // Format phone to 254XXXXXXXXX (remove the +)
-        const formattedPhone = dto.phone.replace('+', '');
+        // Safaricom expects standard KES, so we convert from our internal cents
+        const amountInKes = Math.floor(dto.amountInCents / 100);
 
         try {
             const response = await firstValueFrom(
@@ -62,10 +61,10 @@ export class MpesaService {
                         Password: password,
                         Timestamp: timestamp,
                         TransactionType: 'CustomerPayBillOnline',
-                        Amount: dto.amount, // Safaricom expects standard KES
-                        PartyA: formattedPhone,
+                        Amount: amountInKes,
+                        PartyA: dto.phone,
                         PartyB: shortcode,
-                        PhoneNumber: formattedPhone,
+                        PhoneNumber: dto.phone,
                         CallBackURL: this.config.getOrThrow('MPESA_CALLBACK_URL'),
                         AccountReference: invoice.id.substring(0, 12),
                         TransactionDesc: 'Rent Payment',
@@ -74,65 +73,19 @@ export class MpesaService {
                 ),
             );
 
-            // Record the pending payment attempt in the database
             return this.prisma.tenantClient.payment.create({
                 data: {
                     rentalAgreementId: invoice.rentalAgreementId,
                     rentInvoiceId: invoice.id,
-                    amount: dto.amount,
+                    amount: dto.amountInCents, // Store safely as cents!
                     method: 'MPESA',
                     checkoutRequestId: response.data.CheckoutRequestID,
                     status: PaymentStatus.PENDING,
-                } as any,
+                },
             });
         } catch (error) {
             this.logger.error('STK Push failed', error);
             throw new InternalServerErrorException('Failed to initiate M-Pesa payment');
-        }
-    }
-
-    // This listener processes the callback entirely in the background
-    @OnEvent('mpesa.callback')
-    async handleCallbackEvent(payload: MpesaCallbackDto) {
-        this.logger.log('Processing M-Pesa callback asynchronously...');
-        const { ResultCode, CheckoutRequestID, CallbackMetadata } = payload.Body.stkCallback;
-
-        try {
-            if (ResultCode === 0 && CallbackMetadata) {
-                // Successful payment
-                const receiptItem = CallbackMetadata.Item.find((item) => item.Name === 'MpesaReceiptNumber');
-                const mpesaReceipt = receiptItem?.Value as string;
-
-                await (this.prisma.client as any).$transaction(async (tx: any) => {
-                    const payment = await tx.payment.update({
-                        where: { checkoutRequestId: CheckoutRequestID },
-                        data: {
-                            status: PaymentStatus.COMPLETED,
-                            mpesaReceipt,
-                            rawResponse: payload as any,
-                        },
-                    });
-
-                    // Mark the invoice as paid
-                    if (payment.rentInvoiceId) {
-                        await tx.rentInvoice.update({
-                            where: { id: payment.rentInvoiceId },
-                            data: { isPaid: true },
-                        });
-                    }
-                });
-            } else {
-                // Failed or cancelled payment
-                await (this.prisma.client as any).payment.update({
-                    where: { checkoutRequestId: CheckoutRequestID },
-                    data: {
-                        status: PaymentStatus.FAILED,
-                        rawResponse: payload as any,
-                    },
-                });
-            }
-        } catch (error) {
-            this.logger.error(`Failed to update DB for CheckoutRequestID: ${CheckoutRequestID}`, error);
         }
     }
 }

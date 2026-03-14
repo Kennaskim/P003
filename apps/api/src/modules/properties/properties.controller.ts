@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { PropertiesService } from './properties.service';
 import { CreatePropertyDto, UpdatePropertyDto } from './dto/property.dto';
@@ -40,7 +40,7 @@ export class PropertiesController {
     }
 
     @ApiOperation({ summary: 'Update a property by ID' })
-    @Put(':id')
+    @Patch(':id')
     async update(@Param('id') id: string, @Body() updatePropertyDto: UpdatePropertyDto) {
         const data = await this.propertiesService.update(id, updatePropertyDto);
         return { success: true, data };

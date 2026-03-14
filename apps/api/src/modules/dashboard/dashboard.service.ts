@@ -27,9 +27,9 @@ export class DashboardService {
                 },
             })
         ]);
-
-        const collectedRent = financials.find(f => f.isPaid)?._sum.amount || 0;
-        const pendingRent = financials.find(f => !f.isPaid)?._sum.amount || 0;
+        type FinancialGroup = { isPaid: boolean; _sum: { amount: number | null } };
+        const collectedRent = financials.find((f: FinancialGroup) => f.isPaid)?._sum?.amount || 0;
+        const pendingRent = financials.find((f: FinancialGroup) => !f.isPaid)?._sum?.amount || 0;
 
         return {
             totalProperties,

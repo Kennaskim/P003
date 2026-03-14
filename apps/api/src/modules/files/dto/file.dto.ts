@@ -1,8 +1,8 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, IsInt, IsOptional, Min } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class RequestUploadUrlDto {
-    @ApiProperty({ example: 'document.pdf' })
+    @ApiProperty({ example: 'passport.pdf' })
     @IsString()
     @IsNotEmpty()
     fileName: string;
@@ -10,41 +10,36 @@ export class RequestUploadUrlDto {
     @ApiProperty({ example: 'application/pdf' })
     @IsString()
     @IsNotEmpty()
-    fileType: string; // e.g., 'application/pdf', 'image/jpeg'
-
-    @ApiProperty({ example: 2048000, description: 'File size in bytes' })
-    @IsNumber()
-    @IsNotEmpty()
-    fileSize: number;
+    fileType: string;
 }
 
 export class ConfirmUploadDto {
-    @ApiProperty({ example: 'document.pdf' })
-    @IsString()
-    @IsNotEmpty()
-    fileName: string;
-
-    @ApiProperty({ example: 'tenantId/uuid-document.pdf' })
+    @ApiProperty({ example: 'folder/uuid-file.pdf' })
     @IsString()
     @IsNotEmpty()
     fileKey: string;
+
+    @ApiProperty({ example: 'passport.pdf' })
+    @IsString()
+    @IsNotEmpty()
+    fileName: string;
 
     @ApiProperty({ example: 'application/pdf' })
     @IsString()
     @IsNotEmpty()
     fileType: string;
 
-    @ApiProperty({ example: 2048000 })
-    @IsNumber()
-    @IsNotEmpty()
+    @ApiProperty({ example: 102400, description: 'File size in bytes' })
+    @IsInt()
+    @Min(1)
     fileSize: number;
 
-    @ApiPropertyOptional({ example: 'GENERAL' })
+    @ApiPropertyOptional({ example: 'PROPERTY' })
     @IsString()
     @IsOptional()
     entityType?: string;
 
-    @ApiPropertyOptional({ example: 'GENERAL' })
+    @ApiPropertyOptional({ example: 'uuid-of-entity' })
     @IsString()
     @IsOptional()
     entityId?: string;

@@ -1,7 +1,7 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../../../prisma/prisma.service';
-import { CreateRentalAgreementDto } from './dto/rental-agreement.dto';
-import { UnitStatus } from '../../generated/prisma/client';
+import { PrismaService } from '../../../prisma/prisma.service.js';
+import { CreateRentalAgreementDto } from './dto/rental-agreement.dto.js';
+import { UnitStatus } from '../../generated/prisma/client.js';
 
 @Injectable()
 export class RentalAgreementsService {
@@ -27,26 +27,24 @@ export class RentalAgreementsService {
 
         if (!renter) throw new NotFoundException('RENTER_NOT_FOUND');
 
-        // 4. Execute as a transaction
-        return this.prisma.tenantClient.$transaction(async (tx) => {
-            const agreement = await tx.rentalAgreement.create({
-                data: {
-                    unitId: dto.unitId,
-                    renterId: dto.renterId,
-                    startDate: new Date(dto.startDate),
-                    rentAmount: dto.rentAmount,
-                    deposit: dto.deposit,
-                    isActive: true,
-                } as any,
-            });
-
-            await tx.unit.update({
-                where: { id: dto.unitId },
-                data: { status: UnitStatus.OCCUPIED },
-            });
-
-            return agreement;
+        // 4. Execute sequentially via tenantClient to guarantee RLS context is preserved
+        const agreement = await this.prisma.tenantClient.rentalAgreement.create({
+            data: {
+                unitId: dto.unitId,
+                renterId: dto.renterId,
+                startDate: new Date(dto.startDate),
+                rentAmount: dto.rentAmount,
+                deposit: dto.deposit,
+                isActive: true,
+            },
         });
+
+        await this.prisma.tenantClient.unit.update({
+            where: { id: dto.unitId },
+            data: { status: UnitStatus.OCCUPIED },
+        });
+
+        return agreement;
     }
 
     async findAllActive() {
@@ -81,21 +79,20 @@ export class RentalAgreementsService {
             throw new ConflictException('AGREEMENT_ALREADY_TERMINATED');
         }
 
-        return this.prisma.tenantClient.$transaction(async (tx) => {
-            const terminated = await tx.rentalAgreement.update({
-                where: { id },
-                data: {
-                    isActive: false,
-                    endDate: new Date()
-                },
-            });
-
-            await tx.unit.update({
-                where: { id: agreement.unitId },
-                data: { status: UnitStatus.VACANT },
-            });
-
-            return terminated;
+        // Execute sequentially to guarantee RLS context is preserved
+        const terminated = await this.prisma.tenantClient.rentalAgreement.update({
+            where: { id },
+            data: {
+                isActive: false,
+                endDate: new Date()
+            },
         });
+
+        await this.prisma.tenantClient.unit.update({
+            where: { id: agreement.unitId },
+            data: { status: UnitStatus.VACANT },
+        });
+
+        return terminated;
     }
 }

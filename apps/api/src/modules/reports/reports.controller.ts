@@ -1,10 +1,10 @@
 import { Controller, Get, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { ReportsService } from './reports.service';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../../common/guards/roles.guard';
-import { TenantInterceptor } from '../../common/interceptors/tenant.interceptor';
-import { Roles } from '../../common/decorators/roles.decorator';
+import { ReportsService } from './reports.service.js';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
+import { RolesGuard } from '../../common/guards/roles.guard.js';
+import { TenantInterceptor } from '../../common/interceptors/tenant.interceptor.js';
+import { Roles } from '../../common/decorators/roles.decorator.js';
 import { UserRole } from '../../generated/prisma/client.js';
 
 @ApiTags('Reports')
@@ -12,7 +12,7 @@ import { UserRole } from '../../generated/prisma/client.js';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @UseInterceptors(TenantInterceptor)
 @Roles(UserRole.SUPER_ADMIN, UserRole.PROPERTY_MANAGER, UserRole.LANDLORD, UserRole.ACCOUNTANT)
-@Controller('reports')
+@Controller('v1/reports')
 export class ReportsController {
     constructor(private readonly reportsService: ReportsService) { }
 
@@ -33,4 +33,5 @@ export class ReportsController {
         );
         return { success: true, data };
     }
+
 }

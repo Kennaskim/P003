@@ -1,11 +1,18 @@
 import { Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
-import { MpesaService } from './mpesa.service';
-import { MpesaController } from './mpesa.controller';
+import { BullModule } from '@nestjs/bullmq';
+import { MpesaService } from './mpesa.service.js';
+import { MpesaController } from './mpesa.controller.js';
+import { MpesaProcessor } from './mpesa.processor.js';
 
 @Module({
-    imports: [HttpModule],
+    imports: [
+        HttpModule,
+        BullModule.registerQueue({
+            name: 'mpesa-callbacks',
+        }),
+    ],
     controllers: [MpesaController],
-    providers: [MpesaService],
+    providers: [MpesaService, MpesaProcessor],
 })
 export class MpesaModule { }
