@@ -17,6 +17,7 @@ export class AuthService {
         const existingUser = await this.prisma.client.user.findUnique({
             where: { email: dto.email },
         });
+
         if (existingUser) {
             throw new ConflictException('USER_ALREADY_EXISTS'); // Machine-readable error code [cite: 68]
         }
@@ -24,7 +25,8 @@ export class AuthService {
         const hashedPassword = await bcrypt.hash(dto.password, 10);
 
         // Use a transaction to ensure both Tenant and User are created together [cite: 81]
-        const result = await this.prisma.client.$transaction(async (tx: any) => {
+        // TypeScript automatically infers 'tx' as the Prisma Transaction Client, avoiding 'any'
+        const result = await this.prisma.client.$transaction(async (tx) => {
             const tenant = await tx.tenant.create({
                 data: {
                     name: dto.companyName,
@@ -63,10 +65,19 @@ export class AuthService {
         const payload = { sub: userId, email, tenantId, role };
 
         const [accessToken, refreshToken] = await Promise.all([
-            this.jwtService.signAsync(payload, { expiresIn: '15m' }), // 15-minute expiry 
+            this.jwtService.signAsync(payload, { expiresIn: '15m' }), // 15-minute expiry [cite: 87, 186]
             this.jwtService.signAsync(payload, { expiresIn: '7d' }),  // 7-day refresh token [cite: 186]
         ]);
 
-        return { accessToken, refreshToken, user: { id: userId, role, tenantId } };
+        return {
+            accessToken,
+            refreshToken,
+            user: {
+                id: userId,
+                role,
+                tenantId,
+                email
+            }
+        };
     }
 }

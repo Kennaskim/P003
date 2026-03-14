@@ -4,6 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
+import { BullModule } from '@nestjs/bullmq';
 import { PrismaModule } from '../prisma/prisma.module.js';
 import { JwtStrategy } from './common/strategies/jwt.strategy.js';
 import { AppController } from './app.controller.js';
@@ -21,9 +22,11 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { MaintenanceModule } from './modules/maintenance/maintenance.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { FilesModule } from './modules/files/files.module';
+import { JobsModule } from './modules/jobs/jobs.module';
+import { UsersModule } from './modules/users/users.module';
+import { TenantsModule } from './modules/tenants/tenants.module';
 
-
-//Security
+// Security
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 
@@ -32,10 +35,24 @@ import { APP_GUARD } from '@nestjs/core';
     ConfigModule.forRoot({ isGlobal: true }),
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
+
+    // Rate Limiting
     ThrottlerModule.forRoot([{
       ttl: 60000,
       limit: 100,
     }]),
+
+    // BullMQ / Redis Configuration 
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        connection: {
+          host: config.get<string>('REDIS_HOST', 'localhost'),
+          port: config.get<number>('REDIS_PORT', 6379),
+        },
+      }),
+    }),
 
     PassportModule,
     JwtModule.registerAsync({
@@ -46,8 +63,13 @@ import { APP_GUARD } from '@nestjs/core';
         signOptions: { expiresIn: (config.get('JWT_EXPIRES_IN') ?? '1d') as any },
       }),
     }),
+
     PrismaModule,
+
+    // Feature Modules
     AuthModule,
+    TenantsModule,
+    UsersModule,
     PropertiesModule,
     UnitsModule,
     RentersModule,
@@ -58,6 +80,7 @@ import { APP_GUARD } from '@nestjs/core';
     MaintenanceModule,
     ReportsModule,
     FilesModule,
+    JobsModule,
   ],
 
   controllers: [AppController],

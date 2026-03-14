@@ -1,8 +1,17 @@
+import { ExtractJwt, Strategy } from 'passport-jwt';
+import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PassportStrategy } from '@nestjs/passport';
-import { ExtractJwt, Strategy } from 'passport-jwt';
-import { JwtPayload } from '../decorators/current-user.decorator.js';
+
+// Define the expected shape of the JWT payload to eliminate 'any'
+export interface JwtPayload {
+    sub: string;
+    email: string;
+    role: string;
+    tenantId: string;
+    iat?: number;
+    exp?: number;
+}
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -14,12 +23,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         });
     }
 
-    validate(payload: { sub: string; email: string; role: string; tenantId: string }): JwtPayload {
+    // Use the JwtPayload interface to enforce strict typing
+    async validate(payload: JwtPayload) {
+        // This object is what gets attached to request.user
+        // It MUST include the tenantId for the interceptor to work
         return {
-            sub: payload.sub,
+            id: payload.sub,
             email: payload.email,
-            role: payload.role as JwtPayload['role'],
-            tenantId: payload.tenantId,
+            role: payload.role,
+            tenantId: payload.tenantId
         };
     }
 }

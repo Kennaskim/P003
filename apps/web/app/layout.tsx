@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { Toaster } from "@/components/ui/sonner";
+import { QueryProvider } from "@/components/providers/query-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,8 +17,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={GeistSans.className} suppressHydrationWarning>
-        {children}
-        <Toaster position="top-right" richColors />
+        <QueryProvider>
+          {children}
+          <Toaster position="top-right" richColors />
+        </QueryProvider>
       </body>
     </html>
   );
