@@ -1,121 +1,71 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-} from "@/components/ui/form";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import { FileSignature } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
 const agreementSchema = z.object({
-    propertyId: z.string().min(1, "Please select a property"), // Used for UI filtering only
-    unitId: z.string().uuid("Please select a unit"),
-    renterId: z.string().uuid("Please select a renter"),
+    propertyId: z.string().optional(),
+    unitId: z.string().min(1, "Please select a unit"),
+    renterId: z.string().min(1, "Please select a renter"),
     startDate: z.string().min(1, "Start date is required"),
-    rentAmount: z.number().int().min(0, "Rent cannot be negative"),
-    deposit: z.number().int().min(0, "Deposit cannot be negative"),
+    rentAmount: z.number().min(1, "Rent amount is required"),
+    deposit: z.number().min(0, "Deposit cannot be negative"),
 });
 
-interface CreateAgreementDialogProps {
-    onSuccess: () => void;
+interface Props {
+    units: { id: string; name: string; property: { name: string } }[];
+    renters: { id: string; firstName: string; lastName: string }[];
 }
 
-export function CreateAgreementDialog({ onSuccess }: CreateAgreementDialogProps) {
+export function CreateAgreementDialog({ units, renters }: Props) {
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const queryClient = useQueryClient();
 
-    // Data states for dropdowns
-    const [properties, setProperties] = useState<any[]>([]);
-    const [units, setUnits] = useState<any[]>([]);
-    const [renters, setRenters] = useState<any[]>([]);
+    const today = new Date().toISOString().split('T')[0];
 
-    type AgreementFormValues = z.infer<typeof agreementSchema>;
-    const form = useForm<AgreementFormValues>({
-        resolver: zodResolver(agreementSchema) as any,
+    const form = useForm<z.infer<typeof agreementSchema>>({
+        resolver: zodResolver(agreementSchema),
         defaultValues: {
-            propertyId: "", unitId: "", renterId: "",
-            startDate: new Date().toISOString().split('T')[0], // Defaults to today YYYY-MM-DD
-            rentAmount: 0, deposit: 0
+            propertyId: "",
+            unitId: "",
+            renterId: "",
+            startDate: today,
+            rentAmount: 0,
+            deposit: 0,
         },
     });
-
-    // Watch the selected property to fetch its units
-    const selectedPropertyId = form.watch("propertyId");
-
-    useEffect(() => {
-        if (open) {
-            api.get("/properties").then((res) => setProperties(res.data.data));
-            api.get("/renters").then((res) => setRenters(res.data.data));
-        }
-    }, [open]);
-
-    useEffect(() => {
-        if (selectedPropertyId) {
-            api.get(`/units/property/${selectedPropertyId}`).then((res) => {
-                // Only show vacant units
-                const vacantUnits = res.data.data.filter((u: any) => u.status === "VACANT");
-                setUnits(vacantUnits);
-                form.setValue("unitId", ""); // Reset unit selection
-            });
-        } else {
-            setUnits([]);
-        }
-    }, [selectedPropertyId, form]);
-
-    // When a unit is selected, auto-fill the rent amount
-    useEffect(() => {
-        const selectedUnitId = form.watch("unitId");
-        if (selectedUnitId) {
-            const unit = units.find(u => u.id === selectedUnitId);
-            if (unit) {
-                form.setValue("rentAmount", unit.rentAmount);
-            }
-        }
-    }, [form.watch("unitId"), units, form]);
 
     async function onSubmit(values: z.infer<typeof agreementSchema>) {
         setIsLoading(true);
         try {
-            // We don't send propertyId to the API, so we extract it out
-            const { propertyId, ...payload } = values;
-            // Convert date string to ISO date for the backend
-            const formattedPayload = {
-                ...payload,
-                startDate: new Date(payload.startDate).toISOString(),
+            const payload = {
+                unitId: values.unitId,
+                renterId: values.renterId,
+                startDate: `${values.startDate}T00:00:00.000Z`,
+                rentAmount: Math.floor(values.rentAmount * 100),
+                deposit: Math.floor(values.deposit * 100),
             };
 
-            const response = await api.post("/rental-agreements", formattedPayload);
+            const response = await api.post("/rental-agreements", payload);
+
             if (response.data.success) {
-                toast.success("Rental agreement created!");
+                toast.success("Rental Agreement created!");
                 form.reset();
                 setOpen(false);
-                onSuccess();
+                queryClient.invalidateQueries({ queryKey: ['agreements'] });
+                queryClient.invalidateQueries({ queryKey: ['units'] });
             }
         } catch (error: any) {
             toast.error(error.response?.data?.message || "Failed to create agreement");
@@ -127,70 +77,32 @@ export function CreateAgreementDialog({ onSuccess }: CreateAgreementDialogProps)
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button>
-                    <FileSignature className="mr-2 h-4 w-4" /> New Agreement
+                <Button disabled={units.length === 0 || renters.length === 0}>
+                    <Plus className="mr-2 h-4 w-4" /> New Agreement
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
+            <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Create Rental Agreement</DialogTitle>
-                    <DialogDescription>
-                        Assign a renter to a vacant unit and lock in their monthly rent.
-                    </DialogDescription>
+                    <DialogTitle>Assign Renter to Unit</DialogTitle>
+                    <DialogDescription>Create a new monthly rental agreement.</DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="propertyId"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Property</FormLabel>
-                                        <Select onValueChange={field.onChange} value={field.value}>
-                                            <FormControl><SelectTrigger><SelectValue placeholder="Select property" /></SelectTrigger></FormControl>
-                                            <SelectContent>
-                                                {properties.map((p) => (<SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>))}
-                                            </SelectContent>
-                                        </Select>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="unitId"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Vacant Unit</FormLabel>
-                                        <Select onValueChange={field.onChange} value={field.value} disabled={!selectedPropertyId}>
-                                            <FormControl><SelectTrigger><SelectValue placeholder="Select unit" /></SelectTrigger></FormControl>
-                                            <SelectContent>
-                                                {units.length === 0 ? (
-                                                    <SelectItem value="none" disabled>No vacant units</SelectItem>
-                                                ) : (
-                                                    units.map((u) => (<SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>))
-                                                )}
-                                            </SelectContent>
-                                        </Select>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-
                         <FormField
                             control={form.control}
-                            name="renterId"
+                            name="unitId"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Renter</FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value}>
-                                        <FormControl><SelectTrigger><SelectValue placeholder="Select a renter" /></SelectTrigger></FormControl>
+                                    <FormLabel>Select Vacant Unit</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger><SelectValue placeholder="Choose a unit" /></SelectTrigger>
+                                        </FormControl>
                                         <SelectContent>
-                                            {renters.filter(r => r.status === "ACTIVE").map((r) => (
-                                                <SelectItem key={r.id} value={r.id}>{r.firstName} {r.lastName} - {r.phone}</SelectItem>
+                                            {units.map((u) => (
+                                                <SelectItem key={u.id} value={u.id}>
+                                                    {u.property?.name || "Unknown"} - Unit {u.name}
+                                                </SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
@@ -198,27 +110,55 @@ export function CreateAgreementDialog({ onSuccess }: CreateAgreementDialogProps)
                                 </FormItem>
                             )}
                         />
-
+                        <FormField
+                            control={form.control}
+                            name="renterId"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Select Renter</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger><SelectValue placeholder="Choose a renter" /></SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {renters.map((r) => (
+                                                <SelectItem key={r.id} value={r.id}>
+                                                    {r.firstName} {r.lastName}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
                         <FormField
                             control={form.control}
                             name="startDate"
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Start Date</FormLabel>
-                                    <FormControl><Input type="date" {...field} /></FormControl>
+                                    <FormControl>
+                                        <Input type="date" {...field} />
+                                    </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
-
                         <div className="grid grid-cols-2 gap-4">
                             <FormField
                                 control={form.control}
                                 name="rentAmount"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Monthly Rent (KES)</FormLabel>
-                                        <FormControl><Input type="number" {...field} onChange={e => field.onChange(Number(e.target.value))} /></FormControl>
+                                        <FormLabel>Rent (KES)</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="number"
+                                                {...field}
+                                                onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
+                                            />
+                                        </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -228,14 +168,19 @@ export function CreateAgreementDialog({ onSuccess }: CreateAgreementDialogProps)
                                 name="deposit"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Security Deposit (KES)</FormLabel>
-                                        <FormControl><Input type="number" {...field} onChange={e => field.onChange(Number(e.target.value))} /></FormControl>
+                                        <FormLabel>Deposit (KES)</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="number"
+                                                {...field}
+                                                onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
+                                            />
+                                        </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
                         </div>
-
                         <div className="flex justify-end pt-4">
                             <Button type="submit" disabled={isLoading}>
                                 {isLoading ? "Saving..." : "Create Agreement"}

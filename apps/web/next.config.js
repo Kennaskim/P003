@@ -2,7 +2,14 @@ import { withSentryConfig } from "@sentry/nextjs";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Your existing Next.js config options go here
+  async rewrites() {
+    return [
+      {
+        source: '/api/v1/:path*',
+        destination: 'http://localhost:3001/api/v1/:path*',
+      },
+    ];
+  },
 };
 
 const sentryConfig = withSentryConfig(nextConfig, {

@@ -12,7 +12,7 @@ import { Throttle, SkipThrottle } from '@nestjs/throttler';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
 @ApiTags('M-Pesa Payments')
-@Controller('v1/mpesa')
+@Controller('mpesa')
 export class MpesaController {
     constructor(
         private readonly mpesaService: MpesaService,

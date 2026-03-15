@@ -1,16 +1,11 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
 import { CreateUnitDialog } from "@/components/units/create-unit-dialog";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/ui/data-table";
+import { columns, Unit } from "./columns";
 import {
     Select,
     SelectContent,
@@ -18,158 +13,103 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Home, Tag } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface Property {
     id: string;
     name: string;
 }
 
-interface Unit {
-    id: string;
-    name: string;
-    rentAmount: number;
-    status: "VACANT" | "RESERVED" | "OCCUPIED" | "VACATING" | "MAINTENANCE";
-}
-
-// Kenya Shilling Formatter
-const formatKES = (amount: number) => {
-    return new Intl.NumberFormat("en-KE", {
-        style: "currency",
-        currency: "KES",
-        minimumFractionDigits: 0, // No cents needed for standard rent display
-    }).format(amount);
-};
-
 export default function UnitsPage() {
-    const [properties, setProperties] = useState<Property[]>([]);
-    const [units, setUnits] = useState<Unit[]>([]);
     const [selectedPropertyId, setSelectedPropertyId] = useState<string>("");
-    const [isLoading, setIsLoading] = useState(false);
 
-    // 1. Fetch properties on mount to populate the dropdown
+    // 1. Fetch properties to populate the dropdown filter
+    const { data: properties, isLoading: propertiesLoading } = useQuery({
+        queryKey: ['properties'],
+        queryFn: async () => {
+            const response = await api.get('/properties');
+            return response.data.data as Property[];
+        },
+    });
+
+    // Auto-select the first property when the data loads
     useEffect(() => {
-        const fetchProperties = async () => {
-            try {
-                const response = await api.get("/properties");
-                if (response.data.success && response.data.data.length > 0) {
-                    setProperties(response.data.data);
-                    setSelectedPropertyId(response.data.data[0].id); // Auto-select first property
-                }
-            } catch (error) {
-                console.error("Failed to fetch properties", error);
-            }
-        };
-        fetchProperties();
-    }, []);
-
-    // 2. Fetch units whenever the selected property changes
-    const fetchUnits = useCallback(async (propertyId: string) => {
-        if (!propertyId) return;
-        try {
-            setIsLoading(true);
-            const response = await api.get(`/units/property/${propertyId}`);
-            if (response.data.success) {
-                setUnits(response.data.data);
-            }
-        } catch (error) {
-            console.error("Failed to fetch units", error);
-        } finally {
-            setIsLoading(false);
+        if (properties && properties.length > 0 && !selectedPropertyId) {
+            setSelectedPropertyId(properties[0]!.id);
         }
-    }, []);
+    }, [properties, selectedPropertyId]);
 
-    useEffect(() => {
-        fetchUnits(selectedPropertyId);
-    }, [selectedPropertyId, fetchUnits]);
+    // 2. Fetch units ONLY for the currently selected property
+    const { data: units, isLoading: unitsLoading } = useQuery({
+        // Notice we include the selectedPropertyId in the queryKey so it refetches automatically when it changes!
+        queryKey: ['units', selectedPropertyId],
+        queryFn: async () => {
+            const response = await api.get(`/units/property/${selectedPropertyId}`);
+            return response.data.data as Unit[];
+        },
+        enabled: !!selectedPropertyId, // Prevent fetching until a property is selected
+    });
 
     return (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Units</h1>
+                    <h1 className="text-3xl font-bold tracking-tight">Units</h1>
                     <p className="text-muted-foreground">
                         Manage individual spaces within your properties.
                     </p>
                 </div>
                 <div className="flex items-center gap-4">
-                    <Select value={selectedPropertyId} onValueChange={setSelectedPropertyId}>
+                    <Select
+                        value={selectedPropertyId}
+                        onValueChange={setSelectedPropertyId}
+                        disabled={propertiesLoading || properties?.length === 0}
+                    >
                         <SelectTrigger className="w-[250px]">
                             <SelectValue placeholder="Select a property to view units" />
                         </SelectTrigger>
                         <SelectContent>
-                            {properties.length === 0 ? (
+                            {properties?.length === 0 ? (
                                 <SelectItem value="none" disabled>No properties found</SelectItem>
                             ) : (
-                                properties.map((p) => (
+                                properties?.map((p) => (
                                     <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
                                 ))
                             )}
                         </SelectContent>
                     </Select>
 
-                    <CreateUnitDialog
-                        properties={properties}
-                        defaultPropertyId={selectedPropertyId}
-                        onSuccess={() => fetchUnits(selectedPropertyId)}
-                    />
+                    {/* Notice we removed onSuccess because React Query handles the refresh automatically now */}
+                    <CreateUnitDialog properties={properties || []} />
                 </div>
             </div>
 
-            <div className="rounded-md border bg-white">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Unit Name</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Rent Amount</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {isLoading ? (
-                            <TableRow>
-                                <TableCell colSpan={3} className="h-24 text-center">
-                                    Loading units...
-                                </TableCell>
-                            </TableRow>
-                        ) : !selectedPropertyId ? (
-                            <TableRow>
-                                <TableCell colSpan={3} className="h-24 text-center text-muted-foreground">
-                                    Please create a property first.
-                                </TableCell>
-                            </TableRow>
-                        ) : units.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={3} className="h-24 text-center text-muted-foreground">
-                                    No units found in this property. Click "Add Unit".
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            units.map((unit) => (
-                                <TableRow key={unit.id}>
-                                    <TableCell className="font-medium flex items-center gap-2">
-                                        <Home className="h-4 w-4 text-gray-400" />
-                                        {unit.name}
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant={unit.status === "VACANT" ? "outline" : "default"}
-                                            className={unit.status === "VACANT" ? "bg-green-50 text-green-700 border-green-200" : ""}>
-                                            {unit.status}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-right font-medium">
-                                        <div className="flex items-center justify-end gap-1">
-                                            <Tag className="h-3 w-3 text-muted-foreground" />
-                                            {formatKES(unit.rentAmount)}
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Unit Roster</CardTitle>
+                    <CardDescription>
+                        All rentable units and their current status for the selected property.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {propertiesLoading ? (
+                        <div className="h-24 flex items-center justify-center text-muted-foreground">
+                            Loading properties...
+                        </div>
+                    ) : !selectedPropertyId ? (
+                        <div className="h-24 flex items-center justify-center text-muted-foreground border border-dashed rounded-md">
+                            Please create a property first.
+                        </div>
+                    ) : unitsLoading ? (
+                        <div className="h-24 flex items-center justify-center text-muted-foreground">
+                            Loading units...
+                        </div>
+                    ) : (
+                        // 3. Render the reusable data table!
+                        <DataTable columns={columns} data={units || []} />
+                    )}
+                </CardContent>
+            </Card>
         </div>
     );
 }

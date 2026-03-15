@@ -13,7 +13,7 @@ import { UserRole } from '../../generated/prisma/client.js';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @UseInterceptors(TenantInterceptor)
 @Roles(UserRole.SUPER_ADMIN, UserRole.PROPERTY_MANAGER, UserRole.LANDLORD)
-@Controller('v1/files')
+@Controller('files')
 export class FilesController {
     constructor(private readonly filesService: FilesService) { }
 

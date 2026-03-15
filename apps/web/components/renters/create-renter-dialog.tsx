@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useQueryClient } from "@tanstack/react-query"; // ✅ React Query
 import { api } from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +27,7 @@ import {
 import { UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
+// ✅ Your updated strict Zod schema
 const renterSchema = z.object({
     firstName: z.string().min(2, "First name is required"),
     lastName: z.string().min(2, "Last name is required"),
@@ -37,20 +39,17 @@ const renterSchema = z.object({
         .or(z.literal("")),
 });
 
-interface CreateRenterDialogProps {
-    onSuccess: () => void;
-}
-
-export function CreateRenterDialog({ onSuccess }: CreateRenterDialogProps) {
+export function CreateRenterDialog() {
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const queryClient = useQueryClient(); // ✅ React Query client
 
     const form = useForm<z.infer<typeof renterSchema>>({
         resolver: zodResolver(renterSchema),
         defaultValues: {
             firstName: "",
             lastName: "",
-            phone: "+254",
+            phone: "+254", // Pre-filled country code
             nationalId: "",
             emergencyContact: ""
         },
@@ -70,7 +69,8 @@ export function CreateRenterDialog({ onSuccess }: CreateRenterDialogProps) {
                 toast.success("Renter added successfully!");
                 form.reset();
                 setOpen(false);
-                onSuccess();
+                // ✅ Instantly refresh the table without passing props!
+                queryClient.invalidateQueries({ queryKey: ['renters'] });
             }
         } catch (error: any) {
             toast.error(error.response?.data?.message || "Failed to add renter");
@@ -147,7 +147,7 @@ export function CreateRenterDialog({ onSuccess }: CreateRenterDialogProps) {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Emergency Contact (Optional)</FormLabel>
-                                    <FormControl><Input placeholder="+2547..." {...field} /></FormControl>
+                                    <FormControl><Input placeholder="+254..." {...field} /></FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}

@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/form";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 const propertySchema = z.object({
     name: z.string().min(2, "Property name is required"),
@@ -33,12 +34,13 @@ const propertySchema = z.object({
 });
 
 interface CreatePropertyDialogProps {
-    onSuccess: () => void; // Callback to refresh the table
+    onSuccess?: () => void;
 }
 
-export function CreatePropertyDialog({ onSuccess }: CreatePropertyDialogProps) {
+export function CreatePropertyDialog({ onSuccess }: CreatePropertyDialogProps = {}) {
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const queryClient = useQueryClient();
 
     const form = useForm<z.infer<typeof propertySchema>>({
         resolver: zodResolver(propertySchema),
@@ -53,7 +55,8 @@ export function CreatePropertyDialog({ onSuccess }: CreatePropertyDialogProps) {
                 toast.success("Property created successfully!");
                 form.reset();
                 setOpen(false);
-                onSuccess(); // Trigger table refresh
+                queryClient.invalidateQueries({ queryKey: ["properties"] });
+                if (onSuccess) onSuccess();
             }
         } catch (error: any) {
             toast.error(error.response?.data?.message || "Failed to create property");

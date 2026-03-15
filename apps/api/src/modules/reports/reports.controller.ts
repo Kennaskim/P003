@@ -12,7 +12,7 @@ import { UserRole } from '../../generated/prisma/client.js';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @UseInterceptors(TenantInterceptor)
 @Roles(UserRole.SUPER_ADMIN, UserRole.PROPERTY_MANAGER, UserRole.LANDLORD, UserRole.ACCOUNTANT)
-@Controller('v1/reports')
+@Controller('reports')
 export class ReportsController {
     constructor(private readonly reportsService: ReportsService) { }
 

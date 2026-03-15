@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
 import { api } from "@/lib/axios";
 import { CreateAgreementDialog } from "@/components/agreements/create-agreement-dialog";
 import {
@@ -12,34 +11,49 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { FileText, User, Home, XCircle } from "lucide-react";
+import { User, Home, XCircle } from "lucide-react";
 import { toast } from "sonner";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-const formatKES = (amount: number) => {
-    return new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", minimumFractionDigits: 0 }).format(amount);
+// ✅ Divide by 100 because values are stored as integer CENTS in the DB
+const formatKES = (amountInCents: number) => {
+    return new Intl.NumberFormat("en-KE", {
+        style: "currency",
+        currency: "KES",
+        minimumFractionDigits: 0
+    }).format(amountInCents / 100);
 };
 
 export default function AgreementsPage() {
-    const [agreements, setAgreements] = useState<any[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const queryClient = useQueryClient();
 
-    const fetchAgreements = useCallback(async () => {
-        try {
-            setIsLoading(true);
+    // 1. Fetch Active Agreements
+    const { data: agreements = [], isLoading } = useQuery({
+        queryKey: ['agreements'],
+        queryFn: async () => {
             const response = await api.get("/rental-agreements");
-            if (response.data.success) {
-                setAgreements(response.data.data);
-            }
-        } catch (error) {
-            console.error("Failed to fetch agreements", error);
-        } finally {
-            setIsLoading(false);
+            return response.data.data;
         }
-    }, []);
+    });
 
-    useEffect(() => {
-        fetchAgreements();
-    }, [fetchAgreements]);
+    // 2. Fetch Vacant Units (for the dialog)
+    const { data: units = [] } = useQuery({
+        queryKey: ['units'],
+        queryFn: async () => {
+            const response = await api.get("/units");
+            // We only want to pass VACANT units to the agreement creator
+            return response.data.data.filter((u: any) => u.status === 'VACANT');
+        }
+    });
+
+    // 3. Fetch Renters (for the dialog)
+    const { data: renters = [] } = useQuery({
+        queryKey: ['renters'],
+        queryFn: async () => {
+            const response = await api.get("/renters");
+            return response.data.data.filter((r: any) => r.status === 'ACTIVE');
+        }
+    });
 
     const handleTerminate = async (id: string) => {
         if (!confirm("Are you sure you want to terminate this agreement? The unit will be marked as VACANT.")) return;
@@ -48,7 +62,9 @@ export default function AgreementsPage() {
             const response = await api.patch(`/rental-agreements/${id}/terminate`);
             if (response.data.success) {
                 toast.success("Agreement terminated successfully.");
-                fetchAgreements(); // Refresh list
+                // ✅ Tell React Query to refresh the tables instantly
+                queryClient.invalidateQueries({ queryKey: ['agreements'] });
+                queryClient.invalidateQueries({ queryKey: ['units'] });
             }
         } catch (error: any) {
             toast.error(error.response?.data?.message || "Failed to terminate agreement");
@@ -64,7 +80,8 @@ export default function AgreementsPage() {
                         Manage active contracts between your properties and renters.
                     </p>
                 </div>
-                <CreateAgreementDialog onSuccess={fetchAgreements} />
+                {/* ✅ Pass the fetched units and renters down to the dialog */}
+                <CreateAgreementDialog units={units} renters={renters} />
             </div>
 
             <div className="rounded-md border bg-white">
@@ -90,7 +107,7 @@ export default function AgreementsPage() {
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            agreements.map((agreement) => (
+                            agreements.map((agreement: any) => (
                                 <TableRow key={agreement.id}>
                                     <TableCell className="font-medium">
                                         <div className="flex items-center gap-2">

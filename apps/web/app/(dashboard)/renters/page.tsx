@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query"; // ✅ React Query
 import { api } from "@/lib/axios";
 import { CreateRenterDialog } from "@/components/renters/create-renter-dialog";
 import {
@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Phone, IdCard, User } from "lucide-react";
-import { format } from "date-fns";
 
 interface Renter {
     id: string;
@@ -26,26 +25,14 @@ interface Renter {
 }
 
 export default function RentersPage() {
-    const [renters, setRenters] = useState<Renter[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-
-    const fetchRenters = useCallback(async () => {
-        try {
-            setIsLoading(true);
-            const response = await api.get("/renters");
-            if (response.data.success) {
-                setRenters(response.data.data);
-            }
-        } catch (error) {
-            console.error("Failed to fetch renters", error);
-        } finally {
-            setIsLoading(false);
+    // ✅ React Query handles caching, loading states, and auto-refetching
+    const { data: renters = [], isLoading } = useQuery({
+        queryKey: ['renters'],
+        queryFn: async () => {
+            const response = await api.get('/renters');
+            return response.data.data as Renter[];
         }
-    }, []);
-
-    useEffect(() => {
-        fetchRenters();
-    }, [fetchRenters]);
+    });
 
     return (
         <div className="space-y-6">
@@ -56,7 +43,8 @@ export default function RentersPage() {
                         Manage your tenants and their contact information.
                     </p>
                 </div>
-                <CreateRenterDialog onSuccess={fetchRenters} />
+                {/* No need to pass onSuccess anymore! */}
+                <CreateRenterDialog />
             </div>
 
             <div className="rounded-md border bg-white">
@@ -106,7 +94,7 @@ export default function RentersPage() {
                                         <Badge
                                             variant={renter.status === "ACTIVE" ? "default" : "secondary"}
                                             className={
-                                                renter.status === "ACTIVE" ? "bg-blue-50 text-blue-700 border-blue-200" :
+                                                renter.status === "ACTIVE" ? "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100" :
                                                     renter.status === "EVICTED" ? "bg-red-50 text-red-700 border-red-200" : ""
                                             }
                                         >
@@ -114,7 +102,6 @@ export default function RentersPage() {
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-right text-muted-foreground">
-                                        {/* If you haven't installed date-fns yet, run: npm install date-fns */}
                                         {new Date(renter.createdAt).toLocaleDateString('en-KE', {
                                             year: 'numeric',
                                             month: 'short',

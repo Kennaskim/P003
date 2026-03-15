@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,22 +36,27 @@ import { toast } from "sonner";
 
 const invoiceSchema = z.object({
     rentalAgreementId: z.string().uuid("Please select a rental agreement"),
-    amount: z.number().int().min(1, "Amount must be greater than 0"),
+    amount: z.number().min(1, "Amount must be greater than 0"),
     dueDate: z.string().min(1, "Due date is required"),
 });
 
-interface CreateInvoiceDialogProps {
-    onSuccess: () => void;
-}
-
-export function CreateInvoiceDialog({ onSuccess }: CreateInvoiceDialogProps) {
+export function CreateInvoiceDialog() {
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [agreements, setAgreements] = useState<any[]>([]);
+    const queryClient = useQueryClient();
 
-    type InvoiceFormValues = z.infer<typeof invoiceSchema>;
-    const form = useForm<InvoiceFormValues>({
-        resolver: zodResolver(invoiceSchema) as any,
+    // 1. Fetch active agreements using React Query (only when dialog is open)
+    const { data: agreements = [] } = useQuery({
+        queryKey: ['active-agreements'],
+        queryFn: async () => {
+            const res = await api.get("/rental-agreements");
+            return res.data.data;
+        },
+        enabled: open,
+    });
+
+    const form = useForm<z.infer<typeof invoiceSchema>>({
+        resolver: zodResolver(invoiceSchema),
         defaultValues: {
             rentalAgreementId: "",
             amount: 0,
@@ -58,22 +64,14 @@ export function CreateInvoiceDialog({ onSuccess }: CreateInvoiceDialogProps) {
         },
     });
 
-    // Fetch active agreements when dialog opens
-    useEffect(() => {
-        if (open) {
-            api.get("/rental-agreements").then((res) => {
-                setAgreements(res.data.data);
-            });
-        }
-    }, [open]);
-
-    // Auto-fill amount based on the selected agreement's locked-in rent
+    // 2. Auto-fill amount based on the selected agreement
     useEffect(() => {
         const selectedId = form.watch("rentalAgreementId");
-        if (selectedId) {
-            const agreement = agreements.find(a => a.id === selectedId);
+        if (selectedId && agreements.length > 0) {
+            const agreement = agreements.find((a: any) => a.id === selectedId);
             if (agreement) {
-                form.setValue("amount", agreement.rentAmount);
+                // Convert DB Cents -> UI KES
+                form.setValue("amount", agreement.rentAmount / 100);
             }
         }
     }, [form.watch("rentalAgreementId"), agreements, form]);
@@ -83,14 +81,17 @@ export function CreateInvoiceDialog({ onSuccess }: CreateInvoiceDialogProps) {
         try {
             const payload = {
                 ...values,
+                amount: Math.floor(values.amount * 100), // Convert UI KES -> DB Cents
                 dueDate: new Date(values.dueDate).toISOString(),
             };
             const response = await api.post("/rent-invoices", payload);
+
             if (response.data.success) {
                 toast.success("Invoice generated successfully!");
                 form.reset();
                 setOpen(false);
-                onSuccess();
+                // Tell the billing page to refresh!
+                queryClient.invalidateQueries({ queryKey: ['invoices'] });
             }
         } catch (error: any) {
             toast.error(error.response?.data?.message || "Failed to generate invoice");
@@ -127,7 +128,7 @@ export function CreateInvoiceDialog({ onSuccess }: CreateInvoiceDialogProps) {
                                             {agreements.length === 0 ? (
                                                 <SelectItem value="none" disabled>No active agreements</SelectItem>
                                             ) : (
-                                                agreements.map((a) => (
+                                                agreements.map((a: any) => (
                                                     <SelectItem key={a.id} value={a.id}>
                                                         {a.renter.firstName} ({a.unit.name})
                                                     </SelectItem>
@@ -146,7 +147,9 @@ export function CreateInvoiceDialog({ onSuccess }: CreateInvoiceDialogProps) {
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Amount (KES)</FormLabel>
-                                        <FormControl><Input type="number" {...field} onChange={e => field.onChange(Number(e.target.value))} /></FormControl>
+                                        <FormControl>
+                                            <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />
+                                        </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}

@@ -24,6 +24,13 @@ export class UnitsController {
         return { success: true, data };
     }
 
+    @ApiOperation({ summary: 'Get all units' })
+    @Get()
+    async findAll() {
+        const data = await this.unitsService.findAll();
+        return { success: true, data };
+    }
+
     @ApiOperation({ summary: 'Get all units belonging to a specific property' })
     @Get('property/:propertyId')
     async findAllByProperty(@Param('propertyId') propertyId: string) {

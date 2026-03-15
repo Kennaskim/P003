@@ -14,7 +14,7 @@ import { UserRole } from '../../generated/prisma/client.js';
 @UseInterceptors(TenantInterceptor)
 // Added TENANT so they can actually log requests
 @Roles(UserRole.SUPER_ADMIN, UserRole.PROPERTY_MANAGER, UserRole.LANDLORD, UserRole.MAINTENANCE_STAFF, UserRole.TENANT)
-@Controller('v1/maintenance') // Added v1/ prefix
+@Controller('maintenance')
 export class MaintenanceController {
     constructor(private readonly maintenanceService: MaintenanceService) { }
 

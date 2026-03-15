@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
 import { CreateInvoiceDialog } from "@/components/billing/create-invoice-dialog";
 import {
@@ -13,49 +14,38 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FileText, Send } from "lucide-react";
+import { Send } from "lucide-react";
 import { toast } from "sonner";
 
-const formatKES = (amount: number) => {
-    return new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", minimumFractionDigits: 0 }).format(amount);
+// 1. Format KES by dividing the DB cents by 100
+const formatKES = (amountInCents: number) => {
+    return new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", minimumFractionDigits: 0 }).format(amountInCents / 100);
 };
 
 export default function BillingPage() {
-    const [invoices, setInvoices] = useState<any[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
     const [processingId, setProcessingId] = useState<string | null>(null);
 
-    const fetchInvoices = useCallback(async () => {
-        try {
-            setIsLoading(true);
+    // 2. Fetch Invoices via React Query
+    const { data: invoices = [], isLoading } = useQuery({
+        queryKey: ['invoices'],
+        queryFn: async () => {
             const response = await api.get("/rent-invoices");
-            if (response.data.success) {
-                setInvoices(response.data.data);
-            }
-        } catch (error) {
-            console.error("Failed to fetch invoices", error);
-        } finally {
-            setIsLoading(false);
+            return response.data.data;
         }
-    }, []);
+    });
 
-    useEffect(() => {
-        fetchInvoices();
-    }, [fetchInvoices]);
-
-    const handleMpesaPush = async (invoiceId: string, phone: string, amount: number) => {
+    const handleMpesaPush = async (invoiceId: string, phone: string, amountInCents: number) => {
         setProcessingId(invoiceId);
         try {
+            // amountInCents is passed exactly as stored in the DB, matching your M-Pesa backend DTO
             const response = await api.post("/mpesa/stk-push", {
                 rentInvoiceId: invoiceId,
                 phone: phone,
-                amount: amount,
+                amount: amountInCents,
             });
 
             if (response.data.success) {
                 toast.success(`M-Pesa STK Push sent to ${phone}`);
-                // Optional: you could set an interval to poll the invoice status here 
-                // until the async webhook marks it as paid!
             }
         } catch (error: any) {
             toast.error(error.response?.data?.message || "Failed to initiate M-Pesa payment");
@@ -73,7 +63,8 @@ export default function BillingPage() {
                         Manage rent collection and trigger M-Pesa payments.
                     </p>
                 </div>
-                <CreateInvoiceDialog onSuccess={fetchInvoices} />
+                {/* 3. Removed onSuccess prop, React Query handles this globally now */}
+                <CreateInvoiceDialog />
             </div>
 
             <div className="rounded-md border bg-white">
@@ -99,7 +90,7 @@ export default function BillingPage() {
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            invoices.map((invoice) => (
+                            invoices.map((invoice: any) => (
                                 <TableRow key={invoice.id}>
                                     <TableCell>
                                         <div className="flex flex-col">
@@ -115,6 +106,7 @@ export default function BillingPage() {
                                         {new Date(invoice.dueDate).toLocaleDateString('en-KE')}
                                     </TableCell>
                                     <TableCell className="text-right font-medium">
+                                        {/* Apply the math fix here */}
                                         {formatKES(invoice.amount)}
                                     </TableCell>
                                     <TableCell>

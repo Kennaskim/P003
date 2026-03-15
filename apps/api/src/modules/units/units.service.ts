@@ -18,10 +18,26 @@ export class UnitsService {
             data: dto
         });
     }
+    async findAll() {
+        return this.prisma.tenantClient.unit.findMany({
+            where: { deletedAt: null },
+            include: {
+                property: {
+                    select: { name: true }
+                }
+            },
+            orderBy: { createdAt: 'desc' },
+        });
+    }
 
     async findAllByProperty(propertyId: string) {
         return this.prisma.tenantClient.unit.findMany({
             where: { propertyId, deletedAt: null },
+            include: {
+                property: {
+                    select: { name: true }
+                }
+            },
             orderBy: { name: 'asc' },
         });
     }
