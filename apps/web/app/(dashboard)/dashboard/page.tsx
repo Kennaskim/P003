@@ -1,116 +1,166 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building, Home, Users, CreditCard, AlertCircle } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { DollarSign, Home, AlertCircle, Percent } from "lucide-react";
+import { useAuthStore } from "@/store/authStore";
 
-interface DashboardMetrics {
-    totalProperties: number;
-    totalUnits: number;
-    occupiedUnits: number;
-    vacancyRate: number;
-    activeRenters: number;
-    collectedRent: number;
-    pendingRent: number;
-}
-
-const formatKES = (amount: number) => {
-    return new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", minimumFractionDigits: 0 }).format(amount);
+// Helper to convert integer cents to KES
+const formatKES = (amountInCents: number) => {
+    return new Intl.NumberFormat("en-KE", {
+        style: "currency",
+        currency: "KES",
+        minimumFractionDigits: 0,
+    }).format((amountInCents || 0) / 100);
 };
 
 export default function DashboardPage() {
-    const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const { user } = useAuthStore();
 
-    useEffect(() => {
-        const fetchMetrics = async () => {
-            try {
-                const response = await api.get("/dashboard/metrics");
-                if (response.data.success) {
-                    setMetrics(response.data.data);
-                }
-            } catch (error) {
-                console.error("Failed to fetch dashboard metrics", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
+    // 1. Fetch Financials (Collected vs Pending)
+    const { data: financials, isLoading: loadingFin } = useQuery({
+        queryKey: ["reports", "financials"],
+        queryFn: async () => {
+            const res = await api.get("/reports/financials");
+            return res.data.data;
+        },
+    });
 
-        fetchMetrics();
-    }, []);
+    // 2. Fetch Occupancy (Vacant vs Occupied)
+    const { data: occupancy, isLoading: loadingOcc } = useQuery({
+        queryKey: ["reports", "occupancy"],
+        queryFn: async () => {
+            const res = await api.get("/reports/occupancy");
+            return res.data.data;
+        },
+    });
 
-    if (isLoading || !metrics) {
-        return <div className="flex h-full items-center justify-center text-muted-foreground">Loading analytics...</div>;
+    // 3. Fetch Arrears (Tenants who owe money)
+    const { data: arrears = [], isLoading: loadingArr } = useQuery({
+        queryKey: ["reports", "arrears"],
+        queryFn: async () => {
+            const res = await api.get("/reports/arrears");
+            return res.data.data;
+        },
+    });
+
+    // Calculate Occupancy Rate safely
+    const totalUnits = occupancy?.total || 0;
+    const occupiedUnits = occupancy?.OCCUPIED || 0;
+    const occupancyRate = totalUnits > 0 ? Math.round((occupiedUnits / totalUnits) * 100) : 0;
+
+    const isLoading = loadingFin || loadingOcc || loadingArr;
+
+    if (isLoading) {
+        return <div className="flex h-full items-center justify-center text-muted-foreground">Loading dashboard data...</div>;
     }
 
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl font-bold tracking-tight">Portfolio Overview</h1>
+                <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
                 <p className="text-muted-foreground">
-                    Live analytics for your rental properties.
+                    Welcome back. Here is an overview.
                 </p>
             </div>
 
+            {/* KPI Cards Grid */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Properties</CardTitle>
-                        <Building className="h-4 w-4 text-muted-foreground" />
+                        <CardTitle className="text-sm font-medium">Total Collected</CardTitle>
+                        <DollarSign className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{metrics.totalProperties}</div>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Units Overview</CardTitle>
-                        <Home className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{metrics.totalUnits}</div>
+                        <div className="text-2xl font-bold text-green-600">
+                            {formatKES(financials?.totalCollectedInCents)}
+                        </div>
                         <p className="text-xs text-muted-foreground mt-1">
-                            {metrics.occupiedUnits} occupied ({metrics.vacancyRate.toFixed(1)}% vacant)
+                            Collection rate: {financials?.collectionRate}%
                         </p>
                     </CardContent>
                 </Card>
 
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Active Renters</CardTitle>
-                        <Users className="h-4 w-4 text-muted-foreground" />
+                        <CardTitle className="text-sm font-medium">Pending Arrears</CardTitle>
+                        <AlertCircle className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{metrics.activeRenters}</div>
+                        <div className="text-2xl font-bold text-red-600">
+                            {formatKES(financials?.totalPendingInCents)}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                            Unpaid invoices
+                        </p>
                     </CardContent>
                 </Card>
 
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Collected Rent</CardTitle>
-                        <CreditCard className="h-4 w-4 text-green-600" />
+                        <CardTitle className="text-sm font-medium">Occupancy Rate</CardTitle>
+                        <Percent className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-green-700">{formatKES(metrics.collectedRent)}</div>
+                        <div className="text-2xl font-bold text-blue-600">
+                            {occupancyRate}%
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                            {occupiedUnits} out of {totalUnits} units occupied
+                        </p>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Total Units</CardTitle>
+                        <Home className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">
+                            {totalUnits}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                            {occupancy?.VACANT || 0} vacant, {occupancy?.MAINTENANCE || 0} under maintenance
+                        </p>
                     </CardContent>
                 </Card>
             </div>
 
-            {/* Secondary Row for Alerts/Arrears */}
-            <div className="grid gap-4 md:grid-cols-2">
-                <Card className="border-red-100 bg-red-50/50">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-red-800">Pending Rent (Arrears)</CardTitle>
-                        <AlertCircle className="h-4 w-4 text-red-600" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-red-700">{formatKES(metrics.pendingRent)}</div>
-                        <p className="text-xs text-red-600 mt-1">Outstanding invoices requiring STK push</p>
-                    </CardContent>
-                </Card>
-            </div>
+            {/* Arrears List */}
+            <Card className="col-span-4 mt-6">
+                <CardHeader>
+                    <CardTitle>Recent Arrears</CardTitle>
+                    <CardDescription>Tenants with overdue rent payments.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {arrears.length === 0 ? (
+                        <p className="text-sm text-muted-foreground py-4">All tenants are currently up to date.</p>
+                    ) : (
+                        <div className="space-y-4">
+                            {arrears.slice(0, 5).map((invoice: any) => (
+                                <div key={invoice.id} className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
+                                    <div>
+                                        <p className="font-medium">
+                                            {invoice.rentalAgreement.renter.firstName} {invoice.rentalAgreement.renter.lastName}
+                                        </p>
+                                        <p className="text-sm text-muted-foreground">
+                                            {invoice.rentalAgreement.unit.property.name} - Unit {invoice.rentalAgreement.unit.name}
+                                        </p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="font-bold text-red-600">{formatKES(invoice.amount)}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            Due: {new Date(invoice.dueDate).toLocaleDateString('en-KE')}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
         </div>
     );
 }

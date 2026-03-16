@@ -1,6 +1,7 @@
 import { Controller, Get, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { ReportsService } from './reports.service.js';
+import { GetReportsQueryDto } from './dto/reports.dto.js';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../../common/guards/roles.guard.js';
 import { TenantInterceptor } from '../../common/interceptors/tenant.interceptor.js';
@@ -15,6 +16,27 @@ import { UserRole } from '../../generated/prisma/client.js';
 @Controller('reports')
 export class ReportsController {
     constructor(private readonly reportsService: ReportsService) { }
+
+    @ApiOperation({ summary: 'Get overall financials (expected vs collected vs pending)' })
+    @Get('financials')
+    async getFinancials(@Query() query: GetReportsQueryDto) {
+        const data = await this.reportsService.getFinancialReport(query);
+        return { success: true, data };
+    }
+
+    @ApiOperation({ summary: 'Get overall unit occupancy rates' })
+    @Get('occupancy')
+    async getOccupancy() {
+        const data = await this.reportsService.getOccupancyReport();
+        return { success: true, data };
+    }
+
+    @ApiOperation({ summary: 'Get a list of all current arrears' })
+    @Get('arrears')
+    async getArrears() {
+        const data = await this.reportsService.getArrearsReport();
+        return { success: true, data };
+    }
 
     @ApiOperation({ summary: 'Generate a monthly financial report for a property' })
     @ApiQuery({ name: 'propertyId', type: String, required: true, description: 'ID of the property to generate the report for' })

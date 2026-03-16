@@ -1,42 +1,56 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Download, TrendingUp, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Download, TrendingUp, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 
-const formatKES = (amount: number) => {
-    return new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", minimumFractionDigits: 0 }).format(amount);
+const formatKES = (amountInCents: number) => {
+    return new Intl.NumberFormat("en-KE", {
+        style: "currency",
+        currency: "KES",
+        minimumFractionDigits: 0
+    }).format((amountInCents || 0) / 100);
 };
 
 export default function ReportsPage() {
-    const [properties, setProperties] = useState<any[]>([]);
-    const [selectedProperty, setSelectedProperty] = useState("");
-    const [reportData, setReportData] = useState<any>(null);
-
     const currentMonth = new Date().getMonth() + 1;
     const currentYear = new Date().getFullYear();
+
+    const [selectedProperty, setSelectedProperty] = useState<string>("");
     const [month, setMonth] = useState(currentMonth.toString());
     const [year, setYear] = useState(currentYear.toString());
 
-    useEffect(() => {
-        api.get("/properties").then((res) => {
-            setProperties(res.data.data);
-            if (res.data.data.length > 0) setSelectedProperty(res.data.data[0].id);
-        });
-    }, []);
+    // 1. Fetch Properties (Using React Query)
+    const { data: properties = [] } = useQuery({
+        queryKey: ["properties"],
+        queryFn: async () => {
+            const res = await api.get("/properties");
+            return res.data.data;
+        },
+    });
 
+    // Auto-select the first property once they load
     useEffect(() => {
-        if (selectedProperty) {
-            api.get(`/reports/income?propertyId=${selectedProperty}&month=${month}&year=${year}`)
-                .then(res => setReportData(res.data.data))
-                .catch(err => console.error(err));
+        if (properties.length > 0 && !selectedProperty) {
+            setSelectedProperty(properties[0].id);
         }
-    }, [selectedProperty, month, year]);
+    }, [properties, selectedProperty]);
+
+    // 2. Fetch the Specific Income Report (Using React Query)
+    const { data: reportData, isLoading: isLoadingReport } = useQuery({
+        queryKey: ["reports", "income", selectedProperty, month, year],
+        queryFn: async () => {
+            const res = await api.get(`/reports/income?propertyId=${selectedProperty}&month=${month}&year=${year}`);
+            return res.data.data;
+        },
+        enabled: !!selectedProperty, // Wait until a property is actually selected before fetching!
+    });
 
     return (
         <div className="space-y-6">
@@ -45,7 +59,7 @@ export default function ReportsPage() {
                     <h1 className="text-2xl font-bold tracking-tight">Financial Reports</h1>
                     <p className="text-muted-foreground">Generate monthly statements per property.</p>
                 </div>
-                <Button variant="outline" onClick={() => window.print()}>
+                <Button variant="outline" onClick={() => window.print()} disabled={!reportData}>
                     <Download className="mr-2 h-4 w-4" /> Export PDF
                 </Button>
             </div>
@@ -54,9 +68,13 @@ export default function ReportsPage() {
                 <div className="w-1/3">
                     <label className="text-sm font-medium mb-1 block">Property</label>
                     <Select value={selectedProperty} onValueChange={setSelectedProperty}>
-                        <SelectTrigger><SelectValue placeholder="Select Property" /></SelectTrigger>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select Property" />
+                        </SelectTrigger>
                         <SelectContent>
-                            {properties.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                            {properties.map((p: any) => (
+                                <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                            ))}
                         </SelectContent>
                     </Select>
                 </div>
@@ -86,7 +104,11 @@ export default function ReportsPage() {
                 </div>
             </div>
 
-            {reportData && (
+            {isLoadingReport ? (
+                <div className="flex h-48 items-center justify-center text-muted-foreground">
+                    <Loader2 className="mr-2 h-6 w-6 animate-spin" /> Fetching report...
+                </div>
+            ) : reportData ? (
                 <>
                     <div className="grid gap-4 md:grid-cols-3">
                         <Card>
@@ -95,7 +117,7 @@ export default function ReportsPage() {
                                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{formatKES(reportData.summary.expectedIncome)}</div>
+                                <div className="text-2xl font-bold">{formatKES(reportData.summary.expectedIncomeInCents)}</div>
                             </CardContent>
                         </Card>
                         <Card>
@@ -104,7 +126,7 @@ export default function ReportsPage() {
                                 <CheckCircle2 className="h-4 w-4 text-green-600" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold text-green-700">{formatKES(reportData.summary.collectedIncome)}</div>
+                                <div className="text-2xl font-bold text-green-700">{formatKES(reportData.summary.collectedIncomeInCents)}</div>
                                 <p className="text-xs text-muted-foreground mt-1">Collection Rate: {reportData.summary.collectionRate}%</p>
                             </CardContent>
                         </Card>
@@ -114,12 +136,12 @@ export default function ReportsPage() {
                                 <AlertCircle className="h-4 w-4 text-red-600" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold text-red-700">{formatKES(reportData.summary.arrears)}</div>
+                                <div className="text-2xl font-bold text-red-700">{formatKES(reportData.summary.arrearsInCents)}</div>
                             </CardContent>
                         </Card>
                     </div>
 
-                    <div className="rounded-md border bg-white">
+                    <div className="rounded-md border bg-white mt-6">
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -131,15 +153,22 @@ export default function ReportsPage() {
                             </TableHeader>
                             <TableBody>
                                 {reportData.details.length === 0 ? (
-                                    <TableRow><TableCell colSpan={4} className="text-center h-24">No billing data for this period.</TableCell></TableRow>
+                                    <TableRow>
+                                        <TableCell colSpan={4} className="text-center h-24 text-muted-foreground">
+                                            No billing data for this period.
+                                        </TableCell>
+                                    </TableRow>
                                 ) : (
                                     reportData.details.map((item: any) => (
                                         <TableRow key={item.id}>
                                             <TableCell className="font-medium">{item.unit}</TableCell>
                                             <TableCell>{item.renter}</TableCell>
-                                            <TableCell className="text-right">{formatKES(item.amount)}</TableCell>
+                                            <TableCell className="text-right font-medium">{formatKES(item.amountInCents)}</TableCell>
                                             <TableCell>
-                                                <Badge variant={item.isPaid ? "default" : "destructive"} className={item.isPaid ? "bg-green-100 text-green-800" : ""}>
+                                                <Badge
+                                                    variant={item.isPaid ? "default" : "destructive"}
+                                                    className={item.isPaid ? "bg-green-100 text-green-800 border-green-200" : ""}
+                                                >
                                                     {item.isPaid ? "PAID" : "ARREARS"}
                                                 </Badge>
                                             </TableCell>
@@ -150,7 +179,7 @@ export default function ReportsPage() {
                         </Table>
                     </div>
                 </>
-            )}
+            ) : null}
         </div>
     );
 }

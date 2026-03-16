@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import axios from "axios";
 import { api } from "@/lib/axios";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -16,14 +17,11 @@ import {
 import { UploadCloud, File, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-interface UploadDocumentDialogProps {
-    onSuccess: () => void;
-}
-
-export function UploadDocumentDialog({ onSuccess }: UploadDocumentDialogProps) {
+export function UploadDocumentDialog() {
     const [open, setOpen] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [file, setFile] = useState<File | null>(null);
+    const queryClient = useQueryClient();
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
         if (acceptedFiles.length > 0) {
@@ -51,13 +49,11 @@ export function UploadDocumentDialog({ onSuccess }: UploadDocumentDialogProps) {
             const urlResponse = await api.post("/files/request-upload", {
                 fileName: file.name,
                 fileType: file.type,
-                fileSize: file.size,
             });
 
             const { presignedUrl, fileKey } = urlResponse.data.data;
 
-            // Step 2: Upload directly to Cloudflare R2 using the pre-signed URL
-            // We use standard axios here, NOT our api instance, because we don't want to attach our JWT to the Cloudflare request
+            // Step 2: Upload directly to Cloudflare R2 / S3 using the pre-signed URL
             await axios.put(presignedUrl, file, {
                 headers: {
                     "Content-Type": file.type,
@@ -70,13 +66,15 @@ export function UploadDocumentDialog({ onSuccess }: UploadDocumentDialogProps) {
                 fileKey: fileKey,
                 fileType: file.type,
                 fileSize: file.size,
-                entityType: "GENERAL", // You can expand this later to attach to specific units/renters
+                entityType: "GENERAL",
             });
 
             toast.success("Document uploaded successfully!");
             setFile(null);
             setOpen(false);
-            onSuccess();
+
+            // ✅ Tell React Query to instantly refresh the Documents Table
+            queryClient.invalidateQueries({ queryKey: ['documents'] });
         } catch (error: any) {
             console.error(error);
             toast.error("Failed to upload document. Please try again.");

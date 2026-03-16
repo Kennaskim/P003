@@ -40,20 +40,16 @@ const invoiceSchema = z.object({
     dueDate: z.string().min(1, "Due date is required"),
 });
 
-export function CreateInvoiceDialog() {
+interface CreateInvoiceDialogProps {
+    agreements: any[];
+}
+
+export function CreateInvoiceDialog({ agreements = [] }: CreateInvoiceDialogProps) {
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const queryClient = useQueryClient();
 
-    // 1. Fetch active agreements using React Query (only when dialog is open)
-    const { data: agreements = [] } = useQuery({
-        queryKey: ['active-agreements'],
-        queryFn: async () => {
-            const res = await api.get("/rental-agreements");
-            return res.data.data;
-        },
-        enabled: open,
-    });
+    // Agreements are now passed down as props from the parent (billing/page.tsx)
 
     const form = useForm<z.infer<typeof invoiceSchema>>({
         resolver: zodResolver(invoiceSchema),

@@ -8,7 +8,7 @@ import { api } from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label"; // <-- Added standalone Label import
+import { Label } from "@/components/ui/label";
 import {
     Dialog,
     DialogContent,

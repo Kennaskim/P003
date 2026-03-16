@@ -36,7 +36,7 @@ export default function MaintenancePage() {
 
     const handleStatusChange = async (id: string, newStatus: string) => {
         try {
-            await api.patch(`/maintenance/${id}/status`, { status: newStatus });
+            await api.patch(`/maintenance/${id}`, { status: newStatus });
             toast.success("Status updated");
             fetchRequests();
         } catch {
