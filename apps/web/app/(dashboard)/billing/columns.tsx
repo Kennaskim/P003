@@ -20,21 +20,19 @@ export type Invoice = {
     }
 }
 
-// ✅ Smart component to handle the API call directly from the table row
 const StkPushAction = ({ invoice }: { invoice: Invoice }) => {
     const [isLoading, setIsLoading] = useState(false);
 
     const handlePush = async () => {
         setIsLoading(true);
         try {
-            // Send the exact payload the backend expects
             const payload = {
-                invoiceId: invoice.id,
+                rentInvoiceId: invoice.id,
                 phone: invoice.rentalAgreement.renter.phone,
-                amount: invoice.amount // Already in integer cents!
+                amountInCents: invoice.amount // Already in integer cents!
             };
 
-            const response = await api.post('/mpesa/stkpush', payload);
+            const response = await api.post('/mpesa/stk-push', payload);
 
             if (response.data.success) {
                 toast.success(`Payment prompt sent to ${invoice.rentalAgreement.renter.phone}!`);

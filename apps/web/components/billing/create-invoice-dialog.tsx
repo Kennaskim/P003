@@ -41,7 +41,7 @@ const invoiceSchema = z.object({
 });
 
 interface CreateInvoiceDialogProps {
-    agreements: any[];
+    agreements?: any[];
 }
 
 export function CreateInvoiceDialog({ agreements = [] }: CreateInvoiceDialogProps) {
