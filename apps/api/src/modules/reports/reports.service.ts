@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service.js';
 import { GetReportsQueryDto } from './dto/reports.dto.js';
 import { UnitStatus, Prisma } from '../../generated/prisma/client.js';
+import PDFDocument from 'pdfkit'; // <-- Added for PDF generation
 
 @Injectable()
 export class ReportsService {
@@ -151,5 +152,70 @@ export class ReportsService {
             },
             details,
         };
+    }
+
+    async generateOwnerStatementPdf(data: {
+        ownerName: string;
+        month: string;
+        grossIncome: number;
+        managementFee: number;
+        expenses: number;
+        netPayout: number;
+        propertyNames: string[];
+    }): Promise<Buffer> {
+        return new Promise((resolve, reject) => {
+            // Initialize the PDF document
+            const doc = new PDFDocument({ margin: 50, size: 'A4' });
+            const buffers: Buffer[] = [];
+
+            // Collect data chunks as the PDF is generated
+            doc.on('data', buffers.push.bind(buffers));
+            doc.on('error', reject);
+            doc.on('end', () => resolve(Buffer.concat(buffers)));
+
+            // --- DRAW THE PDF --- //
+
+            // Header
+            doc.fontSize(20).font('Helvetica-Bold').text('Monthly Owner Statement', { align: 'center' });
+            doc.moveDown();
+            doc.fontSize(12).font('Helvetica').text(`Generated on: ${new Date().toLocaleDateString()}`, { align: 'right' });
+            doc.moveDown(2);
+
+            // Owner Info
+            doc.fontSize(14).font('Helvetica-Bold').text('Account Details');
+            doc.fontSize(12).font('Helvetica')
+                .text(`Owner: ${data.ownerName}`)
+                .text(`Statement Period: ${data.month}`)
+                .text(`Properties: ${data.propertyNames.join(', ')}`);
+            doc.moveDown(2);
+
+            // Financial Summary
+            doc.fontSize(14).font('Helvetica-Bold').text('Financial Summary');
+            doc.moveDown(0.5);
+
+            doc.fontSize(12).font('Helvetica');
+            doc.text(`Gross Rent Collected:`, { continued: true }).text(`KES ${data.grossIncome.toLocaleString()}`, { align: 'right' });
+            doc.text(`Management Fees:`, { continued: true }).text(`- KES ${data.managementFee.toLocaleString()}`, { align: 'right' });
+            doc.text(`Maintenance & Expenses:`, { continued: true }).text(`- KES ${data.expenses.toLocaleString()}`, { align: 'right' });
+
+            doc.moveDown();
+
+            // Divider line
+            doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke();
+            doc.moveDown();
+
+            // Net Payout
+            doc.fontSize(14).font('Helvetica-Bold')
+                .text(`Net Payout:`, { continued: true })
+                .text(`KES ${data.netPayout.toLocaleString()}`, { align: 'right' });
+
+            doc.moveDown(3);
+
+            // Footer
+            doc.fontSize(10).font('Helvetica-Oblique').fillColor('gray').text('Thank you for trusting us with your property management.', { align: 'center' });
+
+            // Finalize the PDF
+            doc.end();
+        });
     }
 }

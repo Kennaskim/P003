@@ -49,13 +49,15 @@ enum MaintenanceStatus {
 // ================= Models ================= //
 
 model Tenant {
-  id        String    @id @default(uuid()) // [cite: 73]
-  name      String
-  email     String    @unique
-  phone     String? // E.164 format: +254XXXXXXXXX [cite: 76]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime? // Soft delete 
+  id                 String    @id @default(uuid()) // [cite: 73]
+  name               String
+  email              String    @unique
+  phone              String? // E.164 format: +254XXXXXXXXX [cite: 76]
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  deletedAt          DateTime? // Soft delete 
+  subscriptionPlan   String?   @default("STARTER") // e.g., STARTER, PROFESSIONAL, AGENCY
+  subscriptionStatus String?   @default("TRIAL") // e.g., TRIAL, ACTIVE, EXPIRED
 
   users               User[]
   properties          Property[]
@@ -66,6 +68,9 @@ model Tenant {
   payments            Payment[]
   maintenanceRequests MaintenanceRequest[]
   documents           Document[]
+  auditLogs           AuditLog[]
+  expenses            Expense[]
+  disbursements       Disbursement[]
 }
 
 model User {
@@ -78,7 +83,8 @@ model User {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  tenant Tenant @relation(fields: [tenantId], references: [id])
+  tenant    Tenant     @relation(fields: [tenantId], references: [id])
+  auditLogs AuditLog[]
 
   @@index([tenantId]) // [cite: 200]
 }
@@ -93,8 +99,9 @@ model Property {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  tenant Tenant @relation(fields: [tenantId], references: [id])
-  units  Unit[]
+  tenant   Tenant    @relation(fields: [tenantId], references: [id])
+  units    Unit[]
+  expenses Expense[]
 
   @@index([tenantId])
 }
@@ -202,15 +209,19 @@ model Payment {
 }
 
 model MaintenanceRequest {
-  id          String            @id @default(uuid())
-  tenantId    String
-  unitId      String
-  category    String
-  description String
-  urgency     String // E.g., Critical, High, Medium, Low [cite: 327]
-  status      MaintenanceStatus @default(SUBMITTED)
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  id                String            @id @default(uuid())
+  tenantId          String
+  unitId            String
+  category          String
+  description       String
+  urgency           String // E.g., Critical, High, Medium, Low [cite: 327]
+  status            MaintenanceStatus @default(SUBMITTED)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  cost              Int? // Stored in integer KES
+  assignedToName    String? // Name of the staff or vendor
+  assignedToPhone   String? // For SMS notifications to the vendor
+  invoiceReceiptUrl String? // Link to the R2 file for the repair receipt
 
   tenant Tenant @relation(fields: [tenantId], references: [id])
   unit   Unit   @relation(fields: [unitId], references: [id])
@@ -236,4 +247,57 @@ model Document {
 
   @@index([tenantId])
   @@index([entityType, entityId])
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  tenantId   String
+  userId     String // The user who performed the action
+  action     String // e.g., "USER_LOGIN", "RENT_PAID", "AGREEMENT_TERMINATED"
+  entityType String? // e.g., "PAYMENT", "RENTAL_AGREEMENT"
+  entityId   String?
+  details    Json? // Store before/after state or metadata
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@index([tenantId, createdAt])
+  @@index([userId])
+}
+
+model Expense {
+  id          String   @id @default(uuid())
+  tenantId    String
+  propertyId  String? // Nullable if it's a general business expense
+  category    String // e.g., "MAINTENANCE", "UTILITIES", "MANAGEMENT_FEE"
+  amount      Int // Stored in integer KES
+  date        DateTime
+  description String
+  receiptUrl  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant   Tenant    @relation(fields: [tenantId], references: [id])
+  property Property? @relation(fields: [propertyId], references: [id])
+
+  @@index([tenantId])
+  @@index([propertyId, date])
+}
+
+model Disbursement {
+  id        String   @id @default(uuid())
+  tenantId  String
+  ownerId   String // References an owner (can map to a User with 'OWNER' role or a separate Owner model)
+  amount    Int // Net payout in KES
+  period    String // e.g., "2026-03"
+  status    String   @default("PENDING") // PENDING, PROCESSING, COMPLETED
+  reference String? // Bank or M-Pesa reference
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId, period])
 }

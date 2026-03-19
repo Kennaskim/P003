@@ -7,6 +7,7 @@ import { RolesGuard } from '../../common/guards/roles.guard.js';
 import { TenantInterceptor } from '../../common/interceptors/tenant.interceptor.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
 import { UserRole } from '../../generated/prisma/client.js';
+import { Audit } from '../../common/decorators/audit.decorator.js';
 
 @ApiTags('Maintenance')
 @ApiBearerAuth()
@@ -20,6 +21,7 @@ export class MaintenanceController {
 
     @ApiOperation({ summary: 'Log a new maintenance request' })
     @Post()
+    @Audit('CREATE_MAINTENANCE', 'MAINTENANCE')
     async create(@Body() dto: CreateMaintenanceDto) {
         const data = await this.maintenanceService.create(dto);
         return { success: true, data, message: 'Maintenance request logged' };
@@ -41,6 +43,7 @@ export class MaintenanceController {
 
     @ApiOperation({ summary: 'Update a maintenance request (status, urgency, etc.)' })
     @Patch(':id') // Changed from ':id/status' to standard REST pattern
+    @Audit('UPDATE_MAINTENANCE', 'MAINTENANCE')
     async update(@Param('id') id: string, @Body() dto: UpdateMaintenanceDto) {
         const data = await this.maintenanceService.update(id, dto);
         return { success: true, data, message: 'Maintenance request updated' };

@@ -2,90 +2,96 @@
 
 import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
-import { FileText, Download, Image as ImageIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { format } from "date-fns"
+import { ExternalLink, FileText, Image as ImageIcon, FileArchive, Trash2 } from "lucide-react"
+import { Document, deleteDocument } from "@/lib/api/documents"
 import { api } from "@/lib/axios"
 import { toast } from "sonner"
 
-export type DocumentType = {
-    id: string
-    name: string
-    fileType: string
-    size: number
-    createdAt: string
+// Helper to format bytes into readable sizes (KB, MB)
+const formatBytes = (bytes: number, decimals = 2) => {
+    if (!+bytes) return '0 Bytes'
+    const k = 1024
+    const dm = decimals < 0 ? 0 : decimals
+    const sizes = ['Bytes', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
 }
 
-const handleSecureDownload = async (id: string) => {
+const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this document?")) return;
     try {
-        const response = await api.get(`/files/${id}/download`);
-        if (response.data.success) {
-            window.open(response.data.data.url, "_blank");
-        }
-    } catch (error) {
-        toast.error("Failed to securely fetch document.");
+        await deleteDocument(id);
+        toast.success("Document deleted.");
+        window.location.reload();
+    } catch {
+        toast.error("Failed to delete document.");
     }
 };
 
-export const columns: ColumnDef<DocumentType>[] = [
+const handleView = async (id: string) => {
+    try {
+        const response = await api.get(`/files/${id}/download`);
+        if (response.data.success && response.data.data.url) {
+            window.open(response.data.data.url, "_blank");
+        }
+    } catch {
+        toast.error("Failed to retrieve document link.");
+    }
+};
+
+export const columns: ColumnDef<Document>[] = [
     {
         accessorKey: "name",
         header: "File Name",
         cell: ({ row }) => {
-            const fileType = row.getValue<string>("fileType");
+            const type = row.original.fileType.toLowerCase();
+            let Icon = FileText;
+            if (type.includes("image")) Icon = ImageIcon;
+            if (type.includes("zip") || type.includes("tar")) Icon = FileArchive;
+
             return (
-                <div className="flex items-center gap-2 font-medium">
-                    {fileType?.includes("image") ? (
-                        <ImageIcon className="h-4 w-4 text-blue-400" />
-                    ) : (
-                        <FileText className="h-4 w-4 text-red-400" />
-                    )}
-                    <span className="truncate max-w-[250px]">{row.getValue("name")}</span>
+                <div className="flex items-center space-x-2">
+                    <Icon className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium truncate max-w-[250px]" title={row.getValue("name")}>
+                        {row.getValue("name")}
+                    </span>
                 </div>
             )
-        }
+        },
     },
     {
-        accessorKey: "fileType",
-        header: "Type",
-        cell: ({ row }) => (
-            <span className="text-muted-foreground text-sm">
-                {row.getValue<string>("fileType")?.split("/")[1]?.toUpperCase() || "FILE"}
-            </span>
-        )
+        accessorKey: "entityType",
+        header: "Category",
+        cell: ({ row }) => {
+            const category = (row.getValue("entityType") as string) || "OTHER";
+            return <Badge variant="secondary">{category.replace("_", " ")}</Badge>;
+        },
     },
     {
         accessorKey: "size",
         header: "Size",
-        cell: ({ row }) => {
-            const bytes = row.getValue<number>("size");
-            const mb = (bytes / (1024 * 1024)).toFixed(2);
-            return <span className="text-muted-foreground text-sm">{mb} MB</span>;
-        }
+        cell: ({ row }) => <span className="text-muted-foreground">{formatBytes(row.getValue("size"))}</span>,
     },
     {
         accessorKey: "createdAt",
-        header: "Uploaded",
-        cell: ({ row }) => (
-            <span className="text-muted-foreground text-sm">
-                {new Date(row.getValue<string>("createdAt")).toLocaleDateString('en-KE')}
-            </span>
-        )
+        header: "Uploaded On",
+        cell: ({ row }) => format(new Date(row.getValue("createdAt")), "MMM d, yyyy"),
     },
     {
         id: "actions",
-        header: () => <div className="text-right">Action</div>,
         cell: ({ row }) => {
             return (
-                <div className="flex justify-end">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleSecureDownload(row.original.id)}
-                    >
-                        <Download className="h-4 w-4 mr-2" /> View / Download
+                <div className="flex justify-end items-center gap-2">
+                    <Button variant="ghost" size="sm" onClick={() => handleView(row.original.id)}>
+                        <ExternalLink className="h-4 w-4 mr-1" /> View
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleDelete(row.original.id)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                 </div>
             )
-        }
-    }
+        },
+    },
 ]

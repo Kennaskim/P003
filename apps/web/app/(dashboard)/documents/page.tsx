@@ -1,43 +1,52 @@
 "use client"
 
 import { useQuery } from "@tanstack/react-query"
-import { api } from "@/lib/axios"
-import { UploadDocumentDialog } from "@/components/documents/upload-document-dialog"
+import { getDocuments } from "@/lib/api/documents"
+import { columns } from "./columns"
 import { DataTable } from "@/components/ui/data-table"
+import { UploadDocumentDialog } from "@/components/documents/upload-document-dialog"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { columns, DocumentType } from "./columns"
+import { Loader2 } from "lucide-react"
 
 export default function DocumentsPage() {
-    const { data: documents, isLoading, error } = useQuery({
-        queryKey: ['documents'],
-        queryFn: async () => {
-            const response = await api.get('/files');
-            return response.data.data as DocumentType[];
-        },
-    });
+    const { data, isLoading, isError, refetch } = useQuery({
+        queryKey: ["documents"],
+        queryFn: getDocuments,
+    })
+
+    if (isError) {
+        return (
+            <div className="flex items-center justify-center h-[50vh] text-destructive">
+                Failed to load documents.
+            </div>
+        )
+    }
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
+        <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+            <div className="flex items-center justify-between space-y-2">
                 <div>
                     <h2 className="text-3xl font-bold tracking-tight">Documents</h2>
-                    <p className="text-muted-foreground">Manage leases, ID copies, and property files.</p>
+                    <p className="text-muted-foreground">Manage digital copies of IDs, agreements, and receipts.</p>
                 </div>
-                <UploadDocumentDialog />
+
+                <UploadDocumentDialog onSuccess={refetch} />
             </div>
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Files</CardTitle>
-                    <CardDescription>All uploaded files tied to your tenant account.</CardDescription>
+                    <CardTitle>File Library</CardTitle>
+                    <CardDescription>
+                        All documents associated with your properties and renters.
+                    </CardDescription>
                 </CardHeader>
                 <CardContent>
                     {isLoading ? (
-                        <div className="h-24 flex items-center justify-center text-muted-foreground">Loading documents...</div>
-                    ) : error ? (
-                        <div className="h-24 flex items-center justify-center text-red-500">Failed to load documents.</div>
+                        <div className="flex justify-center items-center h-64">
+                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                        </div>
                     ) : (
-                        <DataTable columns={columns} data={documents || []} />
+                        <DataTable columns={columns} data={data?.data || []} />
                     )}
                 </CardContent>
             </Card>

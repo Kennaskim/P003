@@ -9,6 +9,21 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Download, TrendingUp, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { toast } from "sonner"; // Added for better UX during PDF generation
+
+// --- TypeScript Interfaces to enforce strict typing ---
+interface Property {
+    id: string;
+    name: string;
+}
+
+interface ReportDetail {
+    id: string;
+    unit: string;
+    renter: string;
+    amountInCents: number;
+    isPaid: boolean;
+}
 
 const formatKES = (amountInCents: number) => {
     return new Intl.NumberFormat("en-KE", {
@@ -25,6 +40,7 @@ export default function ReportsPage() {
     const [selectedProperty, setSelectedProperty] = useState<string>("");
     const [month, setMonth] = useState(currentMonth.toString());
     const [year, setYear] = useState(currentYear.toString());
+    const [isDownloading, setIsDownloading] = useState(false); // Track PDF generation state
 
     // 1. Fetch Properties (Using React Query)
     const { data: properties = [] } = useQuery({
@@ -52,6 +68,38 @@ export default function ReportsPage() {
         enabled: !!selectedProperty, // Wait until a property is actually selected before fetching!
     });
 
+    // 3. Phase 3 PDF Generation trigger
+    const handleDownloadPdf = async () => {
+        try {
+            setIsDownloading(true);
+
+            // Format month to match backend expectation (e.g., "2026-03")
+            const formattedMonth = `${year}-${month.padStart(2, '0')}`;
+
+            // Call the Phase 3 backend endpoint
+            const res = await api.get(`/reports/statement/download?month=${formattedMonth}&propertyId=${selectedProperty}`, {
+                responseType: 'blob', // Critical for handling binary file data
+            });
+
+            // Trigger the browser download
+            const url = window.URL.createObjectURL(res.data);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Statement_${formattedMonth}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+
+            toast.success("Statement generated and downloaded successfully!");
+        } catch (error) {
+            console.error("PDF Download Error:", error);
+            toast.error("Failed to generate PDF statement. Please try again.");
+        } finally {
+            setIsDownloading(false);
+        }
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -59,8 +107,18 @@ export default function ReportsPage() {
                     <h1 className="text-2xl font-bold tracking-tight">Financial Reports</h1>
                     <p className="text-muted-foreground">Generate monthly statements per property.</p>
                 </div>
-                <Button variant="outline" onClick={() => window.print()} disabled={!reportData}>
-                    <Download className="mr-2 h-4 w-4" /> Export PDF
+                {/* Updated Button to use backend PDF generation */}
+                <Button
+                    variant="outline"
+                    onClick={handleDownloadPdf}
+                    disabled={!reportData || isDownloading}
+                >
+                    {isDownloading ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                        <Download className="mr-2 h-4 w-4" />
+                    )}
+                    {isDownloading ? "Generating..." : "Export PDF"}
                 </Button>
             </div>
 
@@ -72,7 +130,7 @@ export default function ReportsPage() {
                             <SelectValue placeholder="Select Property" />
                         </SelectTrigger>
                         <SelectContent>
-                            {properties.map((p: any) => (
+                            {properties.map((p: Property) => (
                                 <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
                             ))}
                         </SelectContent>
@@ -159,7 +217,7 @@ export default function ReportsPage() {
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    reportData.details.map((item: any) => (
+                                    reportData.details.map((item: ReportDetail) => (
                                         <TableRow key={item.id}>
                                             <TableCell className="font-medium">{item.unit}</TableCell>
                                             <TableCell>{item.renter}</TableCell>

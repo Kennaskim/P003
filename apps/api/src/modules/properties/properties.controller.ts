@@ -7,6 +7,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { TenantInterceptor } from '../../common/interceptors/tenant.interceptor';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '../../generated/prisma/client.js';
+import { Audit } from '../../common/decorators/audit.decorator.js';
 
 @ApiTags('Properties') // Groups these endpoints under "Properties" in the Swagger UI
 @ApiBearerAuth()       // Adds the padlock icon requiring the JWT token
@@ -19,6 +20,7 @@ export class PropertiesController {
 
     @ApiOperation({ summary: 'Create a new property' })
     @Post()
+    @Audit('CREATE_PROPERTY', 'PROPERTY')
     async create(@Body() createPropertyDto: CreatePropertyDto) {
         const data = await this.propertiesService.create(createPropertyDto);
         // Added the message string to match your other standard responses
@@ -41,6 +43,7 @@ export class PropertiesController {
 
     @ApiOperation({ summary: 'Update a property by ID' })
     @Patch(':id')
+    @Audit('UPDATE_PROPERTY', 'PROPERTY')
     async update(@Param('id') id: string, @Body() updatePropertyDto: UpdatePropertyDto) {
         const data = await this.propertiesService.update(id, updatePropertyDto);
         return { success: true, data };
@@ -48,6 +51,7 @@ export class PropertiesController {
 
     @ApiOperation({ summary: 'Delete a property by ID (Soft delete)' })
     @Delete(':id')
+    @Audit('DELETE_PROPERTY', 'PROPERTY')
     async remove(@Param('id') id: string) {
         await this.propertiesService.remove(id);
         return { success: true, message: 'Property deleted successfully' };

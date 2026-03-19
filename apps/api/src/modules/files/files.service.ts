@@ -68,7 +68,7 @@ export class FilesService {
                 },
             });
         } catch (error) {
-            this.logger.error('confirmUpload failed:', error); // ✅ Using Logger instead of console.error
+            this.logger.error('confirmUpload failed:', error);
             throw new InternalServerErrorException('Failed to save document record');
         }
     }
@@ -101,5 +101,64 @@ export class FilesService {
             this.logger.error('Failed to generate download URL', error);
             throw new InternalServerErrorException('Failed to generate download URL');
         }
+    }
+
+    /**
+     * Upload a file directly via multipart form data.
+     * Uploads the buffer to S3/R2, then saves the document record.
+     */
+    async uploadFile(file: Express.Multer.File, category?: string) {
+        const tenantId = tenantStorage.getStore()?.tenantId;
+        if (!tenantId) throw new InternalServerErrorException('Missing tenant context');
+
+        const cleanFileName = file.originalname.replace(/\s+/g, '_');
+        const fileKey = `${tenantId}/${uuidv4()}-${cleanFileName}`;
+
+        // Upload to S3/R2
+        const putCommand = new PutObjectCommand({
+            Bucket: this.bucketName,
+            Key: fileKey,
+            Body: file.buffer,
+            ContentType: file.mimetype,
+        });
+
+        try {
+            await this.s3Client.send(putCommand);
+        } catch (error) {
+            this.logger.error('Failed to upload file to S3/R2', error);
+            throw new InternalServerErrorException('Failed to upload file');
+        }
+
+        // Save document record
+        try {
+            return await this.prisma.tenantClient.document.create({
+                data: {
+                    name: file.originalname,
+                    fileKey,
+                    fileType: file.mimetype,
+                    size: file.size,
+                    entityType: category || 'OTHER',
+                },
+            });
+        } catch (error) {
+            this.logger.error('Failed to save document record after upload', error);
+            throw new InternalServerErrorException('Failed to save document record');
+        }
+    }
+
+    /**
+     * Soft-delete a document by setting deletedAt.
+     */
+    async softDelete(documentId: string) {
+        const document = await this.prisma.tenantClient.document.findFirst({
+            where: { id: documentId, deletedAt: null },
+        });
+
+        if (!document) throw new NotFoundException('DOCUMENT_NOT_FOUND');
+
+        return this.prisma.tenantClient.document.update({
+            where: { id: documentId },
+            data: { deletedAt: new Date() },
+        });
     }
 }

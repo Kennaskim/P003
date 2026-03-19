@@ -12,20 +12,31 @@ export class AuthService {
         private jwtService: JwtService,
     ) { }
 
-    async register(dto: RegisterDto) {
+    // Helper method for logging auth events
+    async logAuthEvent(tenantId: string, userId: string, action: string, ipAddress?: string) {
+        return this.prisma.client.auditLog.create({
+            data: {
+                tenantId,
+                userId,
+                action,
+                ipAddress,
+            }
+        });
+    }
+
+    async register(dto: RegisterDto, ipAddress?: string) {
         // Check if user already exists
         const existingUser = await this.prisma.client.user.findUnique({
             where: { email: dto.email },
         });
 
         if (existingUser) {
-            throw new ConflictException('USER_ALREADY_EXISTS'); // Machine-readable error code [cite: 68]
+            throw new ConflictException('USER_ALREADY_EXISTS');
         }
 
         const hashedPassword = await bcrypt.hash(dto.password, 10);
 
-        // Use a transaction to ensure both Tenant and User are created together [cite: 81]
-        // TypeScript automatically infers 'tx' as the Prisma Transaction Client, avoiding 'any'
+        // Use a transaction to ensure both Tenant and User are created together 
         const result = await this.prisma.client.$transaction(async (tx) => {
             const tenant = await tx.tenant.create({
                 data: {
@@ -46,17 +57,23 @@ export class AuthService {
             return { tenant, user };
         });
 
+        // Audit Log: Registration
+        await this.logAuthEvent(result.tenant.id, result.user.id, 'REGISTER', ipAddress);
+
         return this.generateTokens(result.user.id, result.tenant.id, result.user.role, result.user.email);
     }
 
-    async login(dto: LoginDto) {
+    async login(dto: LoginDto, ipAddress?: string) {
         const user = await this.prisma.client.user.findUnique({
             where: { email: dto.email },
         });
 
         if (!user || !(await bcrypt.compare(dto.password, user.password))) {
-            throw new UnauthorizedException('INVALID_CREDENTIALS'); // 401 unauthenticated [cite: 70]
+            throw new UnauthorizedException('INVALID_CREDENTIALS');
         }
+
+        // Audit Log: Login
+        await this.logAuthEvent(user.tenantId, user.id, 'LOGIN', ipAddress);
 
         return this.generateTokens(user.id, user.tenantId, user.role, user.email);
     }
@@ -65,8 +82,8 @@ export class AuthService {
         const payload = { sub: userId, email, tenantId, role };
 
         const [accessToken, refreshToken] = await Promise.all([
-            this.jwtService.signAsync(payload, { expiresIn: '15m' }), // 15-minute expiry [cite: 87, 186]
-            this.jwtService.signAsync(payload, { expiresIn: '7d' }),  // 7-day refresh token [cite: 186]
+            this.jwtService.signAsync(payload, { expiresIn: '15m' }),
+            this.jwtService.signAsync(payload, { expiresIn: '7d' }),
         ]);
 
         return {

@@ -25,10 +25,16 @@ import { FilesModule } from './modules/files/files.module';
 import { JobsModule } from './modules/jobs/jobs.module';
 import { UsersModule } from './modules/users/users.module';
 import { TenantsModule } from './modules/tenants/tenants.module';
+import { AdminModule } from './modules/admin/admin.module';
+import { OwnerPortalModule } from './modules/owner-portal/owner-portal.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+
 
 // Security
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 
 @Module({
   imports: [
@@ -81,6 +87,9 @@ import { APP_GUARD } from '@nestjs/core';
     ReportsModule,
     FilesModule,
     JobsModule,
+    AdminModule,
+    OwnerPortalModule,
+    NotificationsModule,
   ],
 
   controllers: [AppController],
@@ -88,6 +97,10 @@ import { APP_GUARD } from '@nestjs/core';
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: AuditLogInterceptor,
     },
     AppService,
     JwtStrategy

@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, Min } from 'class-validator';
 import { MaintenanceStatus } from '../../../generated/prisma/client.js';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 
@@ -22,6 +22,16 @@ export class CreateMaintenanceDto {
     @IsString()
     @IsNotEmpty()
     urgency: string; // Critical, High, Medium, Low
+
+    @ApiPropertyOptional({ example: 'John Doe' })
+    @IsString()
+    @IsOptional()
+    assignedToName?: string;
+
+    @ApiPropertyOptional({ example: 1000 })
+    @Min(0)
+    @IsOptional()
+    cost?: number;
 }
 
 export class UpdateMaintenanceDto extends PartialType(CreateMaintenanceDto) {

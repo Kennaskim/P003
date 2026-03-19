@@ -32,6 +32,8 @@ export type TenantMinAggregateOutputType = {
   createdAt: Date | null
   updatedAt: Date | null
   deletedAt: Date | null
+  subscriptionPlan: string | null
+  subscriptionStatus: string | null
 }
 
 export type TenantMaxAggregateOutputType = {
@@ -42,6 +44,8 @@ export type TenantMaxAggregateOutputType = {
   createdAt: Date | null
   updatedAt: Date | null
   deletedAt: Date | null
+  subscriptionPlan: string | null
+  subscriptionStatus: string | null
 }
 
 export type TenantCountAggregateOutputType = {
@@ -52,6 +56,8 @@ export type TenantCountAggregateOutputType = {
   createdAt: number
   updatedAt: number
   deletedAt: number
+  subscriptionPlan: number
+  subscriptionStatus: number
   _all: number
 }
 
@@ -64,6 +70,8 @@ export type TenantMinAggregateInputType = {
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
+  subscriptionPlan?: true
+  subscriptionStatus?: true
 }
 
 export type TenantMaxAggregateInputType = {
@@ -74,6 +82,8 @@ export type TenantMaxAggregateInputType = {
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
+  subscriptionPlan?: true
+  subscriptionStatus?: true
 }
 
 export type TenantCountAggregateInputType = {
@@ -84,6 +94,8 @@ export type TenantCountAggregateInputType = {
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
+  subscriptionPlan?: true
+  subscriptionStatus?: true
   _all?: true
 }
 
@@ -167,6 +179,8 @@ export type TenantGroupByOutputType = {
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
+  subscriptionPlan: string | null
+  subscriptionStatus: string | null
   _count: TenantCountAggregateOutputType | null
   _min: TenantMinAggregateOutputType | null
   _max: TenantMaxAggregateOutputType | null
@@ -198,6 +212,8 @@ export type TenantWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"Tenant"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Tenant"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"Tenant"> | Date | string | null
+  subscriptionPlan?: Prisma.StringNullableFilter<"Tenant"> | string | null
+  subscriptionStatus?: Prisma.StringNullableFilter<"Tenant"> | string | null
   users?: Prisma.UserListRelationFilter
   properties?: Prisma.PropertyListRelationFilter
   units?: Prisma.UnitListRelationFilter
@@ -207,6 +223,9 @@ export type TenantWhereInput = {
   payments?: Prisma.PaymentListRelationFilter
   maintenanceRequests?: Prisma.MaintenanceRequestListRelationFilter
   documents?: Prisma.DocumentListRelationFilter
+  auditLogs?: Prisma.AuditLogListRelationFilter
+  expenses?: Prisma.ExpenseListRelationFilter
+  disbursements?: Prisma.DisbursementListRelationFilter
 }
 
 export type TenantOrderByWithRelationInput = {
@@ -217,6 +236,8 @@ export type TenantOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  subscriptionPlan?: Prisma.SortOrderInput | Prisma.SortOrder
+  subscriptionStatus?: Prisma.SortOrderInput | Prisma.SortOrder
   users?: Prisma.UserOrderByRelationAggregateInput
   properties?: Prisma.PropertyOrderByRelationAggregateInput
   units?: Prisma.UnitOrderByRelationAggregateInput
@@ -226,6 +247,9 @@ export type TenantOrderByWithRelationInput = {
   payments?: Prisma.PaymentOrderByRelationAggregateInput
   maintenanceRequests?: Prisma.MaintenanceRequestOrderByRelationAggregateInput
   documents?: Prisma.DocumentOrderByRelationAggregateInput
+  auditLogs?: Prisma.AuditLogOrderByRelationAggregateInput
+  expenses?: Prisma.ExpenseOrderByRelationAggregateInput
+  disbursements?: Prisma.DisbursementOrderByRelationAggregateInput
 }
 
 export type TenantWhereUniqueInput = Prisma.AtLeast<{
@@ -239,6 +263,8 @@ export type TenantWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"Tenant"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Tenant"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"Tenant"> | Date | string | null
+  subscriptionPlan?: Prisma.StringNullableFilter<"Tenant"> | string | null
+  subscriptionStatus?: Prisma.StringNullableFilter<"Tenant"> | string | null
   users?: Prisma.UserListRelationFilter
   properties?: Prisma.PropertyListRelationFilter
   units?: Prisma.UnitListRelationFilter
@@ -248,6 +274,9 @@ export type TenantWhereUniqueInput = Prisma.AtLeast<{
   payments?: Prisma.PaymentListRelationFilter
   maintenanceRequests?: Prisma.MaintenanceRequestListRelationFilter
   documents?: Prisma.DocumentListRelationFilter
+  auditLogs?: Prisma.AuditLogListRelationFilter
+  expenses?: Prisma.ExpenseListRelationFilter
+  disbursements?: Prisma.DisbursementListRelationFilter
 }, "id" | "email">
 
 export type TenantOrderByWithAggregationInput = {
@@ -258,6 +287,8 @@ export type TenantOrderByWithAggregationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  subscriptionPlan?: Prisma.SortOrderInput | Prisma.SortOrder
+  subscriptionStatus?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.TenantCountOrderByAggregateInput
   _max?: Prisma.TenantMaxOrderByAggregateInput
   _min?: Prisma.TenantMinOrderByAggregateInput
@@ -274,6 +305,8 @@ export type TenantScalarWhereWithAggregatesInput = {
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Tenant"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Tenant"> | Date | string
   deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Tenant"> | Date | string | null
+  subscriptionPlan?: Prisma.StringNullableWithAggregatesFilter<"Tenant"> | string | null
+  subscriptionStatus?: Prisma.StringNullableWithAggregatesFilter<"Tenant"> | string | null
 }
 
 export type TenantCreateInput = {
@@ -284,6 +317,8 @@ export type TenantCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   users?: Prisma.UserCreateNestedManyWithoutTenantInput
   properties?: Prisma.PropertyCreateNestedManyWithoutTenantInput
   units?: Prisma.UnitCreateNestedManyWithoutTenantInput
@@ -293,6 +328,9 @@ export type TenantCreateInput = {
   payments?: Prisma.PaymentCreateNestedManyWithoutTenantInput
   maintenanceRequests?: Prisma.MaintenanceRequestCreateNestedManyWithoutTenantInput
   documents?: Prisma.DocumentCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutTenantInput
+  expenses?: Prisma.ExpenseCreateNestedManyWithoutTenantInput
+  disbursements?: Prisma.DisbursementCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateInput = {
@@ -303,6 +341,8 @@ export type TenantUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   users?: Prisma.UserUncheckedCreateNestedManyWithoutTenantInput
   properties?: Prisma.PropertyUncheckedCreateNestedManyWithoutTenantInput
   units?: Prisma.UnitUncheckedCreateNestedManyWithoutTenantInput
@@ -312,6 +352,9 @@ export type TenantUncheckedCreateInput = {
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutTenantInput
   maintenanceRequests?: Prisma.MaintenanceRequestUncheckedCreateNestedManyWithoutTenantInput
   documents?: Prisma.DocumentUncheckedCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutTenantInput
+  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutTenantInput
+  disbursements?: Prisma.DisbursementUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUpdateInput = {
@@ -322,6 +365,8 @@ export type TenantUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   users?: Prisma.UserUpdateManyWithoutTenantNestedInput
   properties?: Prisma.PropertyUpdateManyWithoutTenantNestedInput
   units?: Prisma.UnitUpdateManyWithoutTenantNestedInput
@@ -331,6 +376,9 @@ export type TenantUpdateInput = {
   payments?: Prisma.PaymentUpdateManyWithoutTenantNestedInput
   maintenanceRequests?: Prisma.MaintenanceRequestUpdateManyWithoutTenantNestedInput
   documents?: Prisma.DocumentUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutTenantNestedInput
+  expenses?: Prisma.ExpenseUpdateManyWithoutTenantNestedInput
+  disbursements?: Prisma.DisbursementUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateInput = {
@@ -341,6 +389,8 @@ export type TenantUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   users?: Prisma.UserUncheckedUpdateManyWithoutTenantNestedInput
   properties?: Prisma.PropertyUncheckedUpdateManyWithoutTenantNestedInput
   units?: Prisma.UnitUncheckedUpdateManyWithoutTenantNestedInput
@@ -350,6 +400,9 @@ export type TenantUncheckedUpdateInput = {
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutTenantNestedInput
   maintenanceRequests?: Prisma.MaintenanceRequestUncheckedUpdateManyWithoutTenantNestedInput
   documents?: Prisma.DocumentUncheckedUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutTenantNestedInput
+  disbursements?: Prisma.DisbursementUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateManyInput = {
@@ -360,6 +413,8 @@ export type TenantCreateManyInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
 }
 
 export type TenantUpdateManyMutationInput = {
@@ -370,6 +425,8 @@ export type TenantUpdateManyMutationInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type TenantUncheckedUpdateManyInput = {
@@ -380,6 +437,8 @@ export type TenantUncheckedUpdateManyInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type TenantCountOrderByAggregateInput = {
@@ -390,6 +449,8 @@ export type TenantCountOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
+  subscriptionPlan?: Prisma.SortOrder
+  subscriptionStatus?: Prisma.SortOrder
 }
 
 export type TenantMaxOrderByAggregateInput = {
@@ -400,6 +461,8 @@ export type TenantMaxOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
+  subscriptionPlan?: Prisma.SortOrder
+  subscriptionStatus?: Prisma.SortOrder
 }
 
 export type TenantMinOrderByAggregateInput = {
@@ -410,6 +473,8 @@ export type TenantMinOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
+  subscriptionPlan?: Prisma.SortOrder
+  subscriptionStatus?: Prisma.SortOrder
 }
 
 export type TenantScalarRelationFilter = {
@@ -559,6 +624,48 @@ export type TenantUpdateOneRequiredWithoutDocumentsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutDocumentsInput, Prisma.TenantUpdateWithoutDocumentsInput>, Prisma.TenantUncheckedUpdateWithoutDocumentsInput>
 }
 
+export type TenantCreateNestedOneWithoutAuditLogsInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutAuditLogsInput, Prisma.TenantUncheckedCreateWithoutAuditLogsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutAuditLogsInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneRequiredWithoutAuditLogsNestedInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutAuditLogsInput, Prisma.TenantUncheckedCreateWithoutAuditLogsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutAuditLogsInput
+  upsert?: Prisma.TenantUpsertWithoutAuditLogsInput
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutAuditLogsInput, Prisma.TenantUpdateWithoutAuditLogsInput>, Prisma.TenantUncheckedUpdateWithoutAuditLogsInput>
+}
+
+export type TenantCreateNestedOneWithoutExpensesInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutExpensesInput, Prisma.TenantUncheckedCreateWithoutExpensesInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutExpensesInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneRequiredWithoutExpensesNestedInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutExpensesInput, Prisma.TenantUncheckedCreateWithoutExpensesInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutExpensesInput
+  upsert?: Prisma.TenantUpsertWithoutExpensesInput
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutExpensesInput, Prisma.TenantUpdateWithoutExpensesInput>, Prisma.TenantUncheckedUpdateWithoutExpensesInput>
+}
+
+export type TenantCreateNestedOneWithoutDisbursementsInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutDisbursementsInput, Prisma.TenantUncheckedCreateWithoutDisbursementsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutDisbursementsInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneRequiredWithoutDisbursementsNestedInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutDisbursementsInput, Prisma.TenantUncheckedCreateWithoutDisbursementsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutDisbursementsInput
+  upsert?: Prisma.TenantUpsertWithoutDisbursementsInput
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutDisbursementsInput, Prisma.TenantUpdateWithoutDisbursementsInput>, Prisma.TenantUncheckedUpdateWithoutDisbursementsInput>
+}
+
 export type TenantCreateWithoutUsersInput = {
   id?: string
   name: string
@@ -567,6 +674,8 @@ export type TenantCreateWithoutUsersInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   properties?: Prisma.PropertyCreateNestedManyWithoutTenantInput
   units?: Prisma.UnitCreateNestedManyWithoutTenantInput
   renters?: Prisma.RenterCreateNestedManyWithoutTenantInput
@@ -575,6 +684,9 @@ export type TenantCreateWithoutUsersInput = {
   payments?: Prisma.PaymentCreateNestedManyWithoutTenantInput
   maintenanceRequests?: Prisma.MaintenanceRequestCreateNestedManyWithoutTenantInput
   documents?: Prisma.DocumentCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutTenantInput
+  expenses?: Prisma.ExpenseCreateNestedManyWithoutTenantInput
+  disbursements?: Prisma.DisbursementCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutUsersInput = {
@@ -585,6 +697,8 @@ export type TenantUncheckedCreateWithoutUsersInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   properties?: Prisma.PropertyUncheckedCreateNestedManyWithoutTenantInput
   units?: Prisma.UnitUncheckedCreateNestedManyWithoutTenantInput
   renters?: Prisma.RenterUncheckedCreateNestedManyWithoutTenantInput
@@ -593,6 +707,9 @@ export type TenantUncheckedCreateWithoutUsersInput = {
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutTenantInput
   maintenanceRequests?: Prisma.MaintenanceRequestUncheckedCreateNestedManyWithoutTenantInput
   documents?: Prisma.DocumentUncheckedCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutTenantInput
+  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutTenantInput
+  disbursements?: Prisma.DisbursementUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutUsersInput = {
@@ -619,6 +736,8 @@ export type TenantUpdateWithoutUsersInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   properties?: Prisma.PropertyUpdateManyWithoutTenantNestedInput
   units?: Prisma.UnitUpdateManyWithoutTenantNestedInput
   renters?: Prisma.RenterUpdateManyWithoutTenantNestedInput
@@ -627,6 +746,9 @@ export type TenantUpdateWithoutUsersInput = {
   payments?: Prisma.PaymentUpdateManyWithoutTenantNestedInput
   maintenanceRequests?: Prisma.MaintenanceRequestUpdateManyWithoutTenantNestedInput
   documents?: Prisma.DocumentUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutTenantNestedInput
+  expenses?: Prisma.ExpenseUpdateManyWithoutTenantNestedInput
+  disbursements?: Prisma.DisbursementUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutUsersInput = {
@@ -637,6 +759,8 @@ export type TenantUncheckedUpdateWithoutUsersInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   properties?: Prisma.PropertyUncheckedUpdateManyWithoutTenantNestedInput
   units?: Prisma.UnitUncheckedUpdateManyWithoutTenantNestedInput
   renters?: Prisma.RenterUncheckedUpdateManyWithoutTenantNestedInput
@@ -645,6 +769,9 @@ export type TenantUncheckedUpdateWithoutUsersInput = {
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutTenantNestedInput
   maintenanceRequests?: Prisma.MaintenanceRequestUncheckedUpdateManyWithoutTenantNestedInput
   documents?: Prisma.DocumentUncheckedUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutTenantNestedInput
+  disbursements?: Prisma.DisbursementUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutPropertiesInput = {
@@ -655,6 +782,8 @@ export type TenantCreateWithoutPropertiesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   users?: Prisma.UserCreateNestedManyWithoutTenantInput
   units?: Prisma.UnitCreateNestedManyWithoutTenantInput
   renters?: Prisma.RenterCreateNestedManyWithoutTenantInput
@@ -663,6 +792,9 @@ export type TenantCreateWithoutPropertiesInput = {
   payments?: Prisma.PaymentCreateNestedManyWithoutTenantInput
   maintenanceRequests?: Prisma.MaintenanceRequestCreateNestedManyWithoutTenantInput
   documents?: Prisma.DocumentCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutTenantInput
+  expenses?: Prisma.ExpenseCreateNestedManyWithoutTenantInput
+  disbursements?: Prisma.DisbursementCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutPropertiesInput = {
@@ -673,6 +805,8 @@ export type TenantUncheckedCreateWithoutPropertiesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   users?: Prisma.UserUncheckedCreateNestedManyWithoutTenantInput
   units?: Prisma.UnitUncheckedCreateNestedManyWithoutTenantInput
   renters?: Prisma.RenterUncheckedCreateNestedManyWithoutTenantInput
@@ -681,6 +815,9 @@ export type TenantUncheckedCreateWithoutPropertiesInput = {
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutTenantInput
   maintenanceRequests?: Prisma.MaintenanceRequestUncheckedCreateNestedManyWithoutTenantInput
   documents?: Prisma.DocumentUncheckedCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutTenantInput
+  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutTenantInput
+  disbursements?: Prisma.DisbursementUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutPropertiesInput = {
@@ -707,6 +844,8 @@ export type TenantUpdateWithoutPropertiesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   users?: Prisma.UserUpdateManyWithoutTenantNestedInput
   units?: Prisma.UnitUpdateManyWithoutTenantNestedInput
   renters?: Prisma.RenterUpdateManyWithoutTenantNestedInput
@@ -715,6 +854,9 @@ export type TenantUpdateWithoutPropertiesInput = {
   payments?: Prisma.PaymentUpdateManyWithoutTenantNestedInput
   maintenanceRequests?: Prisma.MaintenanceRequestUpdateManyWithoutTenantNestedInput
   documents?: Prisma.DocumentUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutTenantNestedInput
+  expenses?: Prisma.ExpenseUpdateManyWithoutTenantNestedInput
+  disbursements?: Prisma.DisbursementUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutPropertiesInput = {
@@ -725,6 +867,8 @@ export type TenantUncheckedUpdateWithoutPropertiesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   users?: Prisma.UserUncheckedUpdateManyWithoutTenantNestedInput
   units?: Prisma.UnitUncheckedUpdateManyWithoutTenantNestedInput
   renters?: Prisma.RenterUncheckedUpdateManyWithoutTenantNestedInput
@@ -733,6 +877,9 @@ export type TenantUncheckedUpdateWithoutPropertiesInput = {
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutTenantNestedInput
   maintenanceRequests?: Prisma.MaintenanceRequestUncheckedUpdateManyWithoutTenantNestedInput
   documents?: Prisma.DocumentUncheckedUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutTenantNestedInput
+  disbursements?: Prisma.DisbursementUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutUnitsInput = {
@@ -743,6 +890,8 @@ export type TenantCreateWithoutUnitsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   users?: Prisma.UserCreateNestedManyWithoutTenantInput
   properties?: Prisma.PropertyCreateNestedManyWithoutTenantInput
   renters?: Prisma.RenterCreateNestedManyWithoutTenantInput
@@ -751,6 +900,9 @@ export type TenantCreateWithoutUnitsInput = {
   payments?: Prisma.PaymentCreateNestedManyWithoutTenantInput
   maintenanceRequests?: Prisma.MaintenanceRequestCreateNestedManyWithoutTenantInput
   documents?: Prisma.DocumentCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutTenantInput
+  expenses?: Prisma.ExpenseCreateNestedManyWithoutTenantInput
+  disbursements?: Prisma.DisbursementCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutUnitsInput = {
@@ -761,6 +913,8 @@ export type TenantUncheckedCreateWithoutUnitsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   users?: Prisma.UserUncheckedCreateNestedManyWithoutTenantInput
   properties?: Prisma.PropertyUncheckedCreateNestedManyWithoutTenantInput
   renters?: Prisma.RenterUncheckedCreateNestedManyWithoutTenantInput
@@ -769,6 +923,9 @@ export type TenantUncheckedCreateWithoutUnitsInput = {
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutTenantInput
   maintenanceRequests?: Prisma.MaintenanceRequestUncheckedCreateNestedManyWithoutTenantInput
   documents?: Prisma.DocumentUncheckedCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutTenantInput
+  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutTenantInput
+  disbursements?: Prisma.DisbursementUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutUnitsInput = {
@@ -795,6 +952,8 @@ export type TenantUpdateWithoutUnitsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   users?: Prisma.UserUpdateManyWithoutTenantNestedInput
   properties?: Prisma.PropertyUpdateManyWithoutTenantNestedInput
   renters?: Prisma.RenterUpdateManyWithoutTenantNestedInput
@@ -803,6 +962,9 @@ export type TenantUpdateWithoutUnitsInput = {
   payments?: Prisma.PaymentUpdateManyWithoutTenantNestedInput
   maintenanceRequests?: Prisma.MaintenanceRequestUpdateManyWithoutTenantNestedInput
   documents?: Prisma.DocumentUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutTenantNestedInput
+  expenses?: Prisma.ExpenseUpdateManyWithoutTenantNestedInput
+  disbursements?: Prisma.DisbursementUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutUnitsInput = {
@@ -813,6 +975,8 @@ export type TenantUncheckedUpdateWithoutUnitsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   users?: Prisma.UserUncheckedUpdateManyWithoutTenantNestedInput
   properties?: Prisma.PropertyUncheckedUpdateManyWithoutTenantNestedInput
   renters?: Prisma.RenterUncheckedUpdateManyWithoutTenantNestedInput
@@ -821,6 +985,9 @@ export type TenantUncheckedUpdateWithoutUnitsInput = {
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutTenantNestedInput
   maintenanceRequests?: Prisma.MaintenanceRequestUncheckedUpdateManyWithoutTenantNestedInput
   documents?: Prisma.DocumentUncheckedUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutTenantNestedInput
+  disbursements?: Prisma.DisbursementUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutRentersInput = {
@@ -831,6 +998,8 @@ export type TenantCreateWithoutRentersInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   users?: Prisma.UserCreateNestedManyWithoutTenantInput
   properties?: Prisma.PropertyCreateNestedManyWithoutTenantInput
   units?: Prisma.UnitCreateNestedManyWithoutTenantInput
@@ -839,6 +1008,9 @@ export type TenantCreateWithoutRentersInput = {
   payments?: Prisma.PaymentCreateNestedManyWithoutTenantInput
   maintenanceRequests?: Prisma.MaintenanceRequestCreateNestedManyWithoutTenantInput
   documents?: Prisma.DocumentCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutTenantInput
+  expenses?: Prisma.ExpenseCreateNestedManyWithoutTenantInput
+  disbursements?: Prisma.DisbursementCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutRentersInput = {
@@ -849,6 +1021,8 @@ export type TenantUncheckedCreateWithoutRentersInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   users?: Prisma.UserUncheckedCreateNestedManyWithoutTenantInput
   properties?: Prisma.PropertyUncheckedCreateNestedManyWithoutTenantInput
   units?: Prisma.UnitUncheckedCreateNestedManyWithoutTenantInput
@@ -857,6 +1031,9 @@ export type TenantUncheckedCreateWithoutRentersInput = {
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutTenantInput
   maintenanceRequests?: Prisma.MaintenanceRequestUncheckedCreateNestedManyWithoutTenantInput
   documents?: Prisma.DocumentUncheckedCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutTenantInput
+  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutTenantInput
+  disbursements?: Prisma.DisbursementUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutRentersInput = {
@@ -883,6 +1060,8 @@ export type TenantUpdateWithoutRentersInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   users?: Prisma.UserUpdateManyWithoutTenantNestedInput
   properties?: Prisma.PropertyUpdateManyWithoutTenantNestedInput
   units?: Prisma.UnitUpdateManyWithoutTenantNestedInput
@@ -891,6 +1070,9 @@ export type TenantUpdateWithoutRentersInput = {
   payments?: Prisma.PaymentUpdateManyWithoutTenantNestedInput
   maintenanceRequests?: Prisma.MaintenanceRequestUpdateManyWithoutTenantNestedInput
   documents?: Prisma.DocumentUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutTenantNestedInput
+  expenses?: Prisma.ExpenseUpdateManyWithoutTenantNestedInput
+  disbursements?: Prisma.DisbursementUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutRentersInput = {
@@ -901,6 +1083,8 @@ export type TenantUncheckedUpdateWithoutRentersInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   users?: Prisma.UserUncheckedUpdateManyWithoutTenantNestedInput
   properties?: Prisma.PropertyUncheckedUpdateManyWithoutTenantNestedInput
   units?: Prisma.UnitUncheckedUpdateManyWithoutTenantNestedInput
@@ -909,6 +1093,9 @@ export type TenantUncheckedUpdateWithoutRentersInput = {
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutTenantNestedInput
   maintenanceRequests?: Prisma.MaintenanceRequestUncheckedUpdateManyWithoutTenantNestedInput
   documents?: Prisma.DocumentUncheckedUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutTenantNestedInput
+  disbursements?: Prisma.DisbursementUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutRentalAgreementsInput = {
@@ -919,6 +1106,8 @@ export type TenantCreateWithoutRentalAgreementsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   users?: Prisma.UserCreateNestedManyWithoutTenantInput
   properties?: Prisma.PropertyCreateNestedManyWithoutTenantInput
   units?: Prisma.UnitCreateNestedManyWithoutTenantInput
@@ -927,6 +1116,9 @@ export type TenantCreateWithoutRentalAgreementsInput = {
   payments?: Prisma.PaymentCreateNestedManyWithoutTenantInput
   maintenanceRequests?: Prisma.MaintenanceRequestCreateNestedManyWithoutTenantInput
   documents?: Prisma.DocumentCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutTenantInput
+  expenses?: Prisma.ExpenseCreateNestedManyWithoutTenantInput
+  disbursements?: Prisma.DisbursementCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutRentalAgreementsInput = {
@@ -937,6 +1129,8 @@ export type TenantUncheckedCreateWithoutRentalAgreementsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   users?: Prisma.UserUncheckedCreateNestedManyWithoutTenantInput
   properties?: Prisma.PropertyUncheckedCreateNestedManyWithoutTenantInput
   units?: Prisma.UnitUncheckedCreateNestedManyWithoutTenantInput
@@ -945,6 +1139,9 @@ export type TenantUncheckedCreateWithoutRentalAgreementsInput = {
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutTenantInput
   maintenanceRequests?: Prisma.MaintenanceRequestUncheckedCreateNestedManyWithoutTenantInput
   documents?: Prisma.DocumentUncheckedCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutTenantInput
+  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutTenantInput
+  disbursements?: Prisma.DisbursementUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutRentalAgreementsInput = {
@@ -971,6 +1168,8 @@ export type TenantUpdateWithoutRentalAgreementsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   users?: Prisma.UserUpdateManyWithoutTenantNestedInput
   properties?: Prisma.PropertyUpdateManyWithoutTenantNestedInput
   units?: Prisma.UnitUpdateManyWithoutTenantNestedInput
@@ -979,6 +1178,9 @@ export type TenantUpdateWithoutRentalAgreementsInput = {
   payments?: Prisma.PaymentUpdateManyWithoutTenantNestedInput
   maintenanceRequests?: Prisma.MaintenanceRequestUpdateManyWithoutTenantNestedInput
   documents?: Prisma.DocumentUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutTenantNestedInput
+  expenses?: Prisma.ExpenseUpdateManyWithoutTenantNestedInput
+  disbursements?: Prisma.DisbursementUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutRentalAgreementsInput = {
@@ -989,6 +1191,8 @@ export type TenantUncheckedUpdateWithoutRentalAgreementsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   users?: Prisma.UserUncheckedUpdateManyWithoutTenantNestedInput
   properties?: Prisma.PropertyUncheckedUpdateManyWithoutTenantNestedInput
   units?: Prisma.UnitUncheckedUpdateManyWithoutTenantNestedInput
@@ -997,6 +1201,9 @@ export type TenantUncheckedUpdateWithoutRentalAgreementsInput = {
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutTenantNestedInput
   maintenanceRequests?: Prisma.MaintenanceRequestUncheckedUpdateManyWithoutTenantNestedInput
   documents?: Prisma.DocumentUncheckedUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutTenantNestedInput
+  disbursements?: Prisma.DisbursementUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutRentInvoicesInput = {
@@ -1007,6 +1214,8 @@ export type TenantCreateWithoutRentInvoicesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   users?: Prisma.UserCreateNestedManyWithoutTenantInput
   properties?: Prisma.PropertyCreateNestedManyWithoutTenantInput
   units?: Prisma.UnitCreateNestedManyWithoutTenantInput
@@ -1015,6 +1224,9 @@ export type TenantCreateWithoutRentInvoicesInput = {
   payments?: Prisma.PaymentCreateNestedManyWithoutTenantInput
   maintenanceRequests?: Prisma.MaintenanceRequestCreateNestedManyWithoutTenantInput
   documents?: Prisma.DocumentCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutTenantInput
+  expenses?: Prisma.ExpenseCreateNestedManyWithoutTenantInput
+  disbursements?: Prisma.DisbursementCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutRentInvoicesInput = {
@@ -1025,6 +1237,8 @@ export type TenantUncheckedCreateWithoutRentInvoicesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   users?: Prisma.UserUncheckedCreateNestedManyWithoutTenantInput
   properties?: Prisma.PropertyUncheckedCreateNestedManyWithoutTenantInput
   units?: Prisma.UnitUncheckedCreateNestedManyWithoutTenantInput
@@ -1033,6 +1247,9 @@ export type TenantUncheckedCreateWithoutRentInvoicesInput = {
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutTenantInput
   maintenanceRequests?: Prisma.MaintenanceRequestUncheckedCreateNestedManyWithoutTenantInput
   documents?: Prisma.DocumentUncheckedCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutTenantInput
+  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutTenantInput
+  disbursements?: Prisma.DisbursementUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutRentInvoicesInput = {
@@ -1059,6 +1276,8 @@ export type TenantUpdateWithoutRentInvoicesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   users?: Prisma.UserUpdateManyWithoutTenantNestedInput
   properties?: Prisma.PropertyUpdateManyWithoutTenantNestedInput
   units?: Prisma.UnitUpdateManyWithoutTenantNestedInput
@@ -1067,6 +1286,9 @@ export type TenantUpdateWithoutRentInvoicesInput = {
   payments?: Prisma.PaymentUpdateManyWithoutTenantNestedInput
   maintenanceRequests?: Prisma.MaintenanceRequestUpdateManyWithoutTenantNestedInput
   documents?: Prisma.DocumentUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutTenantNestedInput
+  expenses?: Prisma.ExpenseUpdateManyWithoutTenantNestedInput
+  disbursements?: Prisma.DisbursementUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutRentInvoicesInput = {
@@ -1077,6 +1299,8 @@ export type TenantUncheckedUpdateWithoutRentInvoicesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   users?: Prisma.UserUncheckedUpdateManyWithoutTenantNestedInput
   properties?: Prisma.PropertyUncheckedUpdateManyWithoutTenantNestedInput
   units?: Prisma.UnitUncheckedUpdateManyWithoutTenantNestedInput
@@ -1085,6 +1309,9 @@ export type TenantUncheckedUpdateWithoutRentInvoicesInput = {
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutTenantNestedInput
   maintenanceRequests?: Prisma.MaintenanceRequestUncheckedUpdateManyWithoutTenantNestedInput
   documents?: Prisma.DocumentUncheckedUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutTenantNestedInput
+  disbursements?: Prisma.DisbursementUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutPaymentsInput = {
@@ -1095,6 +1322,8 @@ export type TenantCreateWithoutPaymentsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   users?: Prisma.UserCreateNestedManyWithoutTenantInput
   properties?: Prisma.PropertyCreateNestedManyWithoutTenantInput
   units?: Prisma.UnitCreateNestedManyWithoutTenantInput
@@ -1103,6 +1332,9 @@ export type TenantCreateWithoutPaymentsInput = {
   rentInvoices?: Prisma.RentInvoiceCreateNestedManyWithoutTenantInput
   maintenanceRequests?: Prisma.MaintenanceRequestCreateNestedManyWithoutTenantInput
   documents?: Prisma.DocumentCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutTenantInput
+  expenses?: Prisma.ExpenseCreateNestedManyWithoutTenantInput
+  disbursements?: Prisma.DisbursementCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutPaymentsInput = {
@@ -1113,6 +1345,8 @@ export type TenantUncheckedCreateWithoutPaymentsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   users?: Prisma.UserUncheckedCreateNestedManyWithoutTenantInput
   properties?: Prisma.PropertyUncheckedCreateNestedManyWithoutTenantInput
   units?: Prisma.UnitUncheckedCreateNestedManyWithoutTenantInput
@@ -1121,6 +1355,9 @@ export type TenantUncheckedCreateWithoutPaymentsInput = {
   rentInvoices?: Prisma.RentInvoiceUncheckedCreateNestedManyWithoutTenantInput
   maintenanceRequests?: Prisma.MaintenanceRequestUncheckedCreateNestedManyWithoutTenantInput
   documents?: Prisma.DocumentUncheckedCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutTenantInput
+  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutTenantInput
+  disbursements?: Prisma.DisbursementUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutPaymentsInput = {
@@ -1147,6 +1384,8 @@ export type TenantUpdateWithoutPaymentsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   users?: Prisma.UserUpdateManyWithoutTenantNestedInput
   properties?: Prisma.PropertyUpdateManyWithoutTenantNestedInput
   units?: Prisma.UnitUpdateManyWithoutTenantNestedInput
@@ -1155,6 +1394,9 @@ export type TenantUpdateWithoutPaymentsInput = {
   rentInvoices?: Prisma.RentInvoiceUpdateManyWithoutTenantNestedInput
   maintenanceRequests?: Prisma.MaintenanceRequestUpdateManyWithoutTenantNestedInput
   documents?: Prisma.DocumentUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutTenantNestedInput
+  expenses?: Prisma.ExpenseUpdateManyWithoutTenantNestedInput
+  disbursements?: Prisma.DisbursementUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutPaymentsInput = {
@@ -1165,6 +1407,8 @@ export type TenantUncheckedUpdateWithoutPaymentsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   users?: Prisma.UserUncheckedUpdateManyWithoutTenantNestedInput
   properties?: Prisma.PropertyUncheckedUpdateManyWithoutTenantNestedInput
   units?: Prisma.UnitUncheckedUpdateManyWithoutTenantNestedInput
@@ -1173,6 +1417,9 @@ export type TenantUncheckedUpdateWithoutPaymentsInput = {
   rentInvoices?: Prisma.RentInvoiceUncheckedUpdateManyWithoutTenantNestedInput
   maintenanceRequests?: Prisma.MaintenanceRequestUncheckedUpdateManyWithoutTenantNestedInput
   documents?: Prisma.DocumentUncheckedUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutTenantNestedInput
+  disbursements?: Prisma.DisbursementUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutMaintenanceRequestsInput = {
@@ -1183,6 +1430,8 @@ export type TenantCreateWithoutMaintenanceRequestsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   users?: Prisma.UserCreateNestedManyWithoutTenantInput
   properties?: Prisma.PropertyCreateNestedManyWithoutTenantInput
   units?: Prisma.UnitCreateNestedManyWithoutTenantInput
@@ -1191,6 +1440,9 @@ export type TenantCreateWithoutMaintenanceRequestsInput = {
   rentInvoices?: Prisma.RentInvoiceCreateNestedManyWithoutTenantInput
   payments?: Prisma.PaymentCreateNestedManyWithoutTenantInput
   documents?: Prisma.DocumentCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutTenantInput
+  expenses?: Prisma.ExpenseCreateNestedManyWithoutTenantInput
+  disbursements?: Prisma.DisbursementCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutMaintenanceRequestsInput = {
@@ -1201,6 +1453,8 @@ export type TenantUncheckedCreateWithoutMaintenanceRequestsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   users?: Prisma.UserUncheckedCreateNestedManyWithoutTenantInput
   properties?: Prisma.PropertyUncheckedCreateNestedManyWithoutTenantInput
   units?: Prisma.UnitUncheckedCreateNestedManyWithoutTenantInput
@@ -1209,6 +1463,9 @@ export type TenantUncheckedCreateWithoutMaintenanceRequestsInput = {
   rentInvoices?: Prisma.RentInvoiceUncheckedCreateNestedManyWithoutTenantInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutTenantInput
   documents?: Prisma.DocumentUncheckedCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutTenantInput
+  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutTenantInput
+  disbursements?: Prisma.DisbursementUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutMaintenanceRequestsInput = {
@@ -1235,6 +1492,8 @@ export type TenantUpdateWithoutMaintenanceRequestsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   users?: Prisma.UserUpdateManyWithoutTenantNestedInput
   properties?: Prisma.PropertyUpdateManyWithoutTenantNestedInput
   units?: Prisma.UnitUpdateManyWithoutTenantNestedInput
@@ -1243,6 +1502,9 @@ export type TenantUpdateWithoutMaintenanceRequestsInput = {
   rentInvoices?: Prisma.RentInvoiceUpdateManyWithoutTenantNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutTenantNestedInput
   documents?: Prisma.DocumentUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutTenantNestedInput
+  expenses?: Prisma.ExpenseUpdateManyWithoutTenantNestedInput
+  disbursements?: Prisma.DisbursementUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutMaintenanceRequestsInput = {
@@ -1253,6 +1515,8 @@ export type TenantUncheckedUpdateWithoutMaintenanceRequestsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   users?: Prisma.UserUncheckedUpdateManyWithoutTenantNestedInput
   properties?: Prisma.PropertyUncheckedUpdateManyWithoutTenantNestedInput
   units?: Prisma.UnitUncheckedUpdateManyWithoutTenantNestedInput
@@ -1261,6 +1525,9 @@ export type TenantUncheckedUpdateWithoutMaintenanceRequestsInput = {
   rentInvoices?: Prisma.RentInvoiceUncheckedUpdateManyWithoutTenantNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutTenantNestedInput
   documents?: Prisma.DocumentUncheckedUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutTenantNestedInput
+  disbursements?: Prisma.DisbursementUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutDocumentsInput = {
@@ -1271,6 +1538,8 @@ export type TenantCreateWithoutDocumentsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   users?: Prisma.UserCreateNestedManyWithoutTenantInput
   properties?: Prisma.PropertyCreateNestedManyWithoutTenantInput
   units?: Prisma.UnitCreateNestedManyWithoutTenantInput
@@ -1279,6 +1548,9 @@ export type TenantCreateWithoutDocumentsInput = {
   rentInvoices?: Prisma.RentInvoiceCreateNestedManyWithoutTenantInput
   payments?: Prisma.PaymentCreateNestedManyWithoutTenantInput
   maintenanceRequests?: Prisma.MaintenanceRequestCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutTenantInput
+  expenses?: Prisma.ExpenseCreateNestedManyWithoutTenantInput
+  disbursements?: Prisma.DisbursementCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutDocumentsInput = {
@@ -1289,6 +1561,8 @@ export type TenantUncheckedCreateWithoutDocumentsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
   users?: Prisma.UserUncheckedCreateNestedManyWithoutTenantInput
   properties?: Prisma.PropertyUncheckedCreateNestedManyWithoutTenantInput
   units?: Prisma.UnitUncheckedCreateNestedManyWithoutTenantInput
@@ -1297,6 +1571,9 @@ export type TenantUncheckedCreateWithoutDocumentsInput = {
   rentInvoices?: Prisma.RentInvoiceUncheckedCreateNestedManyWithoutTenantInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutTenantInput
   maintenanceRequests?: Prisma.MaintenanceRequestUncheckedCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutTenantInput
+  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutTenantInput
+  disbursements?: Prisma.DisbursementUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutDocumentsInput = {
@@ -1323,6 +1600,8 @@ export type TenantUpdateWithoutDocumentsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   users?: Prisma.UserUpdateManyWithoutTenantNestedInput
   properties?: Prisma.PropertyUpdateManyWithoutTenantNestedInput
   units?: Prisma.UnitUpdateManyWithoutTenantNestedInput
@@ -1331,6 +1610,9 @@ export type TenantUpdateWithoutDocumentsInput = {
   rentInvoices?: Prisma.RentInvoiceUpdateManyWithoutTenantNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutTenantNestedInput
   maintenanceRequests?: Prisma.MaintenanceRequestUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutTenantNestedInput
+  expenses?: Prisma.ExpenseUpdateManyWithoutTenantNestedInput
+  disbursements?: Prisma.DisbursementUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutDocumentsInput = {
@@ -1341,6 +1623,8 @@ export type TenantUncheckedUpdateWithoutDocumentsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   users?: Prisma.UserUncheckedUpdateManyWithoutTenantNestedInput
   properties?: Prisma.PropertyUncheckedUpdateManyWithoutTenantNestedInput
   units?: Prisma.UnitUncheckedUpdateManyWithoutTenantNestedInput
@@ -1349,6 +1633,333 @@ export type TenantUncheckedUpdateWithoutDocumentsInput = {
   rentInvoices?: Prisma.RentInvoiceUncheckedUpdateManyWithoutTenantNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutTenantNestedInput
   maintenanceRequests?: Prisma.MaintenanceRequestUncheckedUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutTenantNestedInput
+  disbursements?: Prisma.DisbursementUncheckedUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantCreateWithoutAuditLogsInput = {
+  id?: string
+  name: string
+  email: string
+  phone?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
+  users?: Prisma.UserCreateNestedManyWithoutTenantInput
+  properties?: Prisma.PropertyCreateNestedManyWithoutTenantInput
+  units?: Prisma.UnitCreateNestedManyWithoutTenantInput
+  renters?: Prisma.RenterCreateNestedManyWithoutTenantInput
+  rentalAgreements?: Prisma.RentalAgreementCreateNestedManyWithoutTenantInput
+  rentInvoices?: Prisma.RentInvoiceCreateNestedManyWithoutTenantInput
+  payments?: Prisma.PaymentCreateNestedManyWithoutTenantInput
+  maintenanceRequests?: Prisma.MaintenanceRequestCreateNestedManyWithoutTenantInput
+  documents?: Prisma.DocumentCreateNestedManyWithoutTenantInput
+  expenses?: Prisma.ExpenseCreateNestedManyWithoutTenantInput
+  disbursements?: Prisma.DisbursementCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutAuditLogsInput = {
+  id?: string
+  name: string
+  email: string
+  phone?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutTenantInput
+  properties?: Prisma.PropertyUncheckedCreateNestedManyWithoutTenantInput
+  units?: Prisma.UnitUncheckedCreateNestedManyWithoutTenantInput
+  renters?: Prisma.RenterUncheckedCreateNestedManyWithoutTenantInput
+  rentalAgreements?: Prisma.RentalAgreementUncheckedCreateNestedManyWithoutTenantInput
+  rentInvoices?: Prisma.RentInvoiceUncheckedCreateNestedManyWithoutTenantInput
+  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutTenantInput
+  maintenanceRequests?: Prisma.MaintenanceRequestUncheckedCreateNestedManyWithoutTenantInput
+  documents?: Prisma.DocumentUncheckedCreateNestedManyWithoutTenantInput
+  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutTenantInput
+  disbursements?: Prisma.DisbursementUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutAuditLogsInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<Prisma.TenantCreateWithoutAuditLogsInput, Prisma.TenantUncheckedCreateWithoutAuditLogsInput>
+}
+
+export type TenantUpsertWithoutAuditLogsInput = {
+  update: Prisma.XOR<Prisma.TenantUpdateWithoutAuditLogsInput, Prisma.TenantUncheckedUpdateWithoutAuditLogsInput>
+  create: Prisma.XOR<Prisma.TenantCreateWithoutAuditLogsInput, Prisma.TenantUncheckedCreateWithoutAuditLogsInput>
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutAuditLogsInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<Prisma.TenantUpdateWithoutAuditLogsInput, Prisma.TenantUncheckedUpdateWithoutAuditLogsInput>
+}
+
+export type TenantUpdateWithoutAuditLogsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  users?: Prisma.UserUpdateManyWithoutTenantNestedInput
+  properties?: Prisma.PropertyUpdateManyWithoutTenantNestedInput
+  units?: Prisma.UnitUpdateManyWithoutTenantNestedInput
+  renters?: Prisma.RenterUpdateManyWithoutTenantNestedInput
+  rentalAgreements?: Prisma.RentalAgreementUpdateManyWithoutTenantNestedInput
+  rentInvoices?: Prisma.RentInvoiceUpdateManyWithoutTenantNestedInput
+  payments?: Prisma.PaymentUpdateManyWithoutTenantNestedInput
+  maintenanceRequests?: Prisma.MaintenanceRequestUpdateManyWithoutTenantNestedInput
+  documents?: Prisma.DocumentUpdateManyWithoutTenantNestedInput
+  expenses?: Prisma.ExpenseUpdateManyWithoutTenantNestedInput
+  disbursements?: Prisma.DisbursementUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutAuditLogsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  users?: Prisma.UserUncheckedUpdateManyWithoutTenantNestedInput
+  properties?: Prisma.PropertyUncheckedUpdateManyWithoutTenantNestedInput
+  units?: Prisma.UnitUncheckedUpdateManyWithoutTenantNestedInput
+  renters?: Prisma.RenterUncheckedUpdateManyWithoutTenantNestedInput
+  rentalAgreements?: Prisma.RentalAgreementUncheckedUpdateManyWithoutTenantNestedInput
+  rentInvoices?: Prisma.RentInvoiceUncheckedUpdateManyWithoutTenantNestedInput
+  payments?: Prisma.PaymentUncheckedUpdateManyWithoutTenantNestedInput
+  maintenanceRequests?: Prisma.MaintenanceRequestUncheckedUpdateManyWithoutTenantNestedInput
+  documents?: Prisma.DocumentUncheckedUpdateManyWithoutTenantNestedInput
+  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutTenantNestedInput
+  disbursements?: Prisma.DisbursementUncheckedUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantCreateWithoutExpensesInput = {
+  id?: string
+  name: string
+  email: string
+  phone?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
+  users?: Prisma.UserCreateNestedManyWithoutTenantInput
+  properties?: Prisma.PropertyCreateNestedManyWithoutTenantInput
+  units?: Prisma.UnitCreateNestedManyWithoutTenantInput
+  renters?: Prisma.RenterCreateNestedManyWithoutTenantInput
+  rentalAgreements?: Prisma.RentalAgreementCreateNestedManyWithoutTenantInput
+  rentInvoices?: Prisma.RentInvoiceCreateNestedManyWithoutTenantInput
+  payments?: Prisma.PaymentCreateNestedManyWithoutTenantInput
+  maintenanceRequests?: Prisma.MaintenanceRequestCreateNestedManyWithoutTenantInput
+  documents?: Prisma.DocumentCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutTenantInput
+  disbursements?: Prisma.DisbursementCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutExpensesInput = {
+  id?: string
+  name: string
+  email: string
+  phone?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutTenantInput
+  properties?: Prisma.PropertyUncheckedCreateNestedManyWithoutTenantInput
+  units?: Prisma.UnitUncheckedCreateNestedManyWithoutTenantInput
+  renters?: Prisma.RenterUncheckedCreateNestedManyWithoutTenantInput
+  rentalAgreements?: Prisma.RentalAgreementUncheckedCreateNestedManyWithoutTenantInput
+  rentInvoices?: Prisma.RentInvoiceUncheckedCreateNestedManyWithoutTenantInput
+  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutTenantInput
+  maintenanceRequests?: Prisma.MaintenanceRequestUncheckedCreateNestedManyWithoutTenantInput
+  documents?: Prisma.DocumentUncheckedCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutTenantInput
+  disbursements?: Prisma.DisbursementUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutExpensesInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<Prisma.TenantCreateWithoutExpensesInput, Prisma.TenantUncheckedCreateWithoutExpensesInput>
+}
+
+export type TenantUpsertWithoutExpensesInput = {
+  update: Prisma.XOR<Prisma.TenantUpdateWithoutExpensesInput, Prisma.TenantUncheckedUpdateWithoutExpensesInput>
+  create: Prisma.XOR<Prisma.TenantCreateWithoutExpensesInput, Prisma.TenantUncheckedCreateWithoutExpensesInput>
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutExpensesInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<Prisma.TenantUpdateWithoutExpensesInput, Prisma.TenantUncheckedUpdateWithoutExpensesInput>
+}
+
+export type TenantUpdateWithoutExpensesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  users?: Prisma.UserUpdateManyWithoutTenantNestedInput
+  properties?: Prisma.PropertyUpdateManyWithoutTenantNestedInput
+  units?: Prisma.UnitUpdateManyWithoutTenantNestedInput
+  renters?: Prisma.RenterUpdateManyWithoutTenantNestedInput
+  rentalAgreements?: Prisma.RentalAgreementUpdateManyWithoutTenantNestedInput
+  rentInvoices?: Prisma.RentInvoiceUpdateManyWithoutTenantNestedInput
+  payments?: Prisma.PaymentUpdateManyWithoutTenantNestedInput
+  maintenanceRequests?: Prisma.MaintenanceRequestUpdateManyWithoutTenantNestedInput
+  documents?: Prisma.DocumentUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutTenantNestedInput
+  disbursements?: Prisma.DisbursementUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutExpensesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  users?: Prisma.UserUncheckedUpdateManyWithoutTenantNestedInput
+  properties?: Prisma.PropertyUncheckedUpdateManyWithoutTenantNestedInput
+  units?: Prisma.UnitUncheckedUpdateManyWithoutTenantNestedInput
+  renters?: Prisma.RenterUncheckedUpdateManyWithoutTenantNestedInput
+  rentalAgreements?: Prisma.RentalAgreementUncheckedUpdateManyWithoutTenantNestedInput
+  rentInvoices?: Prisma.RentInvoiceUncheckedUpdateManyWithoutTenantNestedInput
+  payments?: Prisma.PaymentUncheckedUpdateManyWithoutTenantNestedInput
+  maintenanceRequests?: Prisma.MaintenanceRequestUncheckedUpdateManyWithoutTenantNestedInput
+  documents?: Prisma.DocumentUncheckedUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+  disbursements?: Prisma.DisbursementUncheckedUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantCreateWithoutDisbursementsInput = {
+  id?: string
+  name: string
+  email: string
+  phone?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
+  users?: Prisma.UserCreateNestedManyWithoutTenantInput
+  properties?: Prisma.PropertyCreateNestedManyWithoutTenantInput
+  units?: Prisma.UnitCreateNestedManyWithoutTenantInput
+  renters?: Prisma.RenterCreateNestedManyWithoutTenantInput
+  rentalAgreements?: Prisma.RentalAgreementCreateNestedManyWithoutTenantInput
+  rentInvoices?: Prisma.RentInvoiceCreateNestedManyWithoutTenantInput
+  payments?: Prisma.PaymentCreateNestedManyWithoutTenantInput
+  maintenanceRequests?: Prisma.MaintenanceRequestCreateNestedManyWithoutTenantInput
+  documents?: Prisma.DocumentCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutTenantInput
+  expenses?: Prisma.ExpenseCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutDisbursementsInput = {
+  id?: string
+  name: string
+  email: string
+  phone?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  subscriptionPlan?: string | null
+  subscriptionStatus?: string | null
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutTenantInput
+  properties?: Prisma.PropertyUncheckedCreateNestedManyWithoutTenantInput
+  units?: Prisma.UnitUncheckedCreateNestedManyWithoutTenantInput
+  renters?: Prisma.RenterUncheckedCreateNestedManyWithoutTenantInput
+  rentalAgreements?: Prisma.RentalAgreementUncheckedCreateNestedManyWithoutTenantInput
+  rentInvoices?: Prisma.RentInvoiceUncheckedCreateNestedManyWithoutTenantInput
+  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutTenantInput
+  maintenanceRequests?: Prisma.MaintenanceRequestUncheckedCreateNestedManyWithoutTenantInput
+  documents?: Prisma.DocumentUncheckedCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutTenantInput
+  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutDisbursementsInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<Prisma.TenantCreateWithoutDisbursementsInput, Prisma.TenantUncheckedCreateWithoutDisbursementsInput>
+}
+
+export type TenantUpsertWithoutDisbursementsInput = {
+  update: Prisma.XOR<Prisma.TenantUpdateWithoutDisbursementsInput, Prisma.TenantUncheckedUpdateWithoutDisbursementsInput>
+  create: Prisma.XOR<Prisma.TenantCreateWithoutDisbursementsInput, Prisma.TenantUncheckedCreateWithoutDisbursementsInput>
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutDisbursementsInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<Prisma.TenantUpdateWithoutDisbursementsInput, Prisma.TenantUncheckedUpdateWithoutDisbursementsInput>
+}
+
+export type TenantUpdateWithoutDisbursementsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  users?: Prisma.UserUpdateManyWithoutTenantNestedInput
+  properties?: Prisma.PropertyUpdateManyWithoutTenantNestedInput
+  units?: Prisma.UnitUpdateManyWithoutTenantNestedInput
+  renters?: Prisma.RenterUpdateManyWithoutTenantNestedInput
+  rentalAgreements?: Prisma.RentalAgreementUpdateManyWithoutTenantNestedInput
+  rentInvoices?: Prisma.RentInvoiceUpdateManyWithoutTenantNestedInput
+  payments?: Prisma.PaymentUpdateManyWithoutTenantNestedInput
+  maintenanceRequests?: Prisma.MaintenanceRequestUpdateManyWithoutTenantNestedInput
+  documents?: Prisma.DocumentUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutTenantNestedInput
+  expenses?: Prisma.ExpenseUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutDisbursementsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionPlan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  users?: Prisma.UserUncheckedUpdateManyWithoutTenantNestedInput
+  properties?: Prisma.PropertyUncheckedUpdateManyWithoutTenantNestedInput
+  units?: Prisma.UnitUncheckedUpdateManyWithoutTenantNestedInput
+  renters?: Prisma.RenterUncheckedUpdateManyWithoutTenantNestedInput
+  rentalAgreements?: Prisma.RentalAgreementUncheckedUpdateManyWithoutTenantNestedInput
+  rentInvoices?: Prisma.RentInvoiceUncheckedUpdateManyWithoutTenantNestedInput
+  payments?: Prisma.PaymentUncheckedUpdateManyWithoutTenantNestedInput
+  maintenanceRequests?: Prisma.MaintenanceRequestUncheckedUpdateManyWithoutTenantNestedInput
+  documents?: Prisma.DocumentUncheckedUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 
@@ -1366,6 +1977,9 @@ export type TenantCountOutputType = {
   payments: number
   maintenanceRequests: number
   documents: number
+  auditLogs: number
+  expenses: number
+  disbursements: number
 }
 
 export type TenantCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1378,6 +1992,9 @@ export type TenantCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions
   payments?: boolean | TenantCountOutputTypeCountPaymentsArgs
   maintenanceRequests?: boolean | TenantCountOutputTypeCountMaintenanceRequestsArgs
   documents?: boolean | TenantCountOutputTypeCountDocumentsArgs
+  auditLogs?: boolean | TenantCountOutputTypeCountAuditLogsArgs
+  expenses?: boolean | TenantCountOutputTypeCountExpensesArgs
+  disbursements?: boolean | TenantCountOutputTypeCountDisbursementsArgs
 }
 
 /**
@@ -1453,6 +2070,27 @@ export type TenantCountOutputTypeCountDocumentsArgs<ExtArgs extends runtime.Type
   where?: Prisma.DocumentWhereInput
 }
 
+/**
+ * TenantCountOutputType without action
+ */
+export type TenantCountOutputTypeCountAuditLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AuditLogWhereInput
+}
+
+/**
+ * TenantCountOutputType without action
+ */
+export type TenantCountOutputTypeCountExpensesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ExpenseWhereInput
+}
+
+/**
+ * TenantCountOutputType without action
+ */
+export type TenantCountOutputTypeCountDisbursementsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DisbursementWhereInput
+}
+
 
 export type TenantSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1462,6 +2100,8 @@ export type TenantSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
+  subscriptionPlan?: boolean
+  subscriptionStatus?: boolean
   users?: boolean | Prisma.Tenant$usersArgs<ExtArgs>
   properties?: boolean | Prisma.Tenant$propertiesArgs<ExtArgs>
   units?: boolean | Prisma.Tenant$unitsArgs<ExtArgs>
@@ -1471,6 +2111,9 @@ export type TenantSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   payments?: boolean | Prisma.Tenant$paymentsArgs<ExtArgs>
   maintenanceRequests?: boolean | Prisma.Tenant$maintenanceRequestsArgs<ExtArgs>
   documents?: boolean | Prisma.Tenant$documentsArgs<ExtArgs>
+  auditLogs?: boolean | Prisma.Tenant$auditLogsArgs<ExtArgs>
+  expenses?: boolean | Prisma.Tenant$expensesArgs<ExtArgs>
+  disbursements?: boolean | Prisma.Tenant$disbursementsArgs<ExtArgs>
   _count?: boolean | Prisma.TenantCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["tenant"]>
 
@@ -1482,6 +2125,8 @@ export type TenantSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
+  subscriptionPlan?: boolean
+  subscriptionStatus?: boolean
 }, ExtArgs["result"]["tenant"]>
 
 export type TenantSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1492,6 +2137,8 @@ export type TenantSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
+  subscriptionPlan?: boolean
+  subscriptionStatus?: boolean
 }, ExtArgs["result"]["tenant"]>
 
 export type TenantSelectScalar = {
@@ -1502,9 +2149,11 @@ export type TenantSelectScalar = {
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
+  subscriptionPlan?: boolean
+  subscriptionStatus?: boolean
 }
 
-export type TenantOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "phone" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["tenant"]>
+export type TenantOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "phone" | "createdAt" | "updatedAt" | "deletedAt" | "subscriptionPlan" | "subscriptionStatus", ExtArgs["result"]["tenant"]>
 export type TenantInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   users?: boolean | Prisma.Tenant$usersArgs<ExtArgs>
   properties?: boolean | Prisma.Tenant$propertiesArgs<ExtArgs>
@@ -1515,6 +2164,9 @@ export type TenantInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   payments?: boolean | Prisma.Tenant$paymentsArgs<ExtArgs>
   maintenanceRequests?: boolean | Prisma.Tenant$maintenanceRequestsArgs<ExtArgs>
   documents?: boolean | Prisma.Tenant$documentsArgs<ExtArgs>
+  auditLogs?: boolean | Prisma.Tenant$auditLogsArgs<ExtArgs>
+  expenses?: boolean | Prisma.Tenant$expensesArgs<ExtArgs>
+  disbursements?: boolean | Prisma.Tenant$disbursementsArgs<ExtArgs>
   _count?: boolean | Prisma.TenantCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type TenantIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1532,6 +2184,9 @@ export type $TenantPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     payments: Prisma.$PaymentPayload<ExtArgs>[]
     maintenanceRequests: Prisma.$MaintenanceRequestPayload<ExtArgs>[]
     documents: Prisma.$DocumentPayload<ExtArgs>[]
+    auditLogs: Prisma.$AuditLogPayload<ExtArgs>[]
+    expenses: Prisma.$ExpensePayload<ExtArgs>[]
+    disbursements: Prisma.$DisbursementPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1541,6 +2196,8 @@ export type $TenantPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     createdAt: Date
     updatedAt: Date
     deletedAt: Date | null
+    subscriptionPlan: string | null
+    subscriptionStatus: string | null
   }, ExtArgs["result"]["tenant"]>
   composites: {}
 }
@@ -1944,6 +2601,9 @@ export interface Prisma__TenantClient<T, Null = never, ExtArgs extends runtime.T
   payments<T extends Prisma.Tenant$paymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$paymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   maintenanceRequests<T extends Prisma.Tenant$maintenanceRequestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$maintenanceRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MaintenanceRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   documents<T extends Prisma.Tenant$documentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$documentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DocumentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  auditLogs<T extends Prisma.Tenant$auditLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  expenses<T extends Prisma.Tenant$expensesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$expensesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ExpensePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  disbursements<T extends Prisma.Tenant$disbursementsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$disbursementsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DisbursementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1980,6 +2640,8 @@ export interface TenantFieldRefs {
   readonly createdAt: Prisma.FieldRef<"Tenant", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Tenant", 'DateTime'>
   readonly deletedAt: Prisma.FieldRef<"Tenant", 'DateTime'>
+  readonly subscriptionPlan: Prisma.FieldRef<"Tenant", 'String'>
+  readonly subscriptionStatus: Prisma.FieldRef<"Tenant", 'String'>
 }
     
 
@@ -2581,6 +3243,78 @@ export type Tenant$documentsArgs<ExtArgs extends runtime.Types.Extensions.Intern
   take?: number
   skip?: number
   distinct?: Prisma.DocumentScalarFieldEnum | Prisma.DocumentScalarFieldEnum[]
+}
+
+/**
+ * Tenant.auditLogs
+ */
+export type Tenant$auditLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AuditLog
+   */
+  select?: Prisma.AuditLogSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AuditLog
+   */
+  omit?: Prisma.AuditLogOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AuditLogInclude<ExtArgs> | null
+  where?: Prisma.AuditLogWhereInput
+  orderBy?: Prisma.AuditLogOrderByWithRelationInput | Prisma.AuditLogOrderByWithRelationInput[]
+  cursor?: Prisma.AuditLogWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AuditLogScalarFieldEnum | Prisma.AuditLogScalarFieldEnum[]
+}
+
+/**
+ * Tenant.expenses
+ */
+export type Tenant$expensesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Expense
+   */
+  select?: Prisma.ExpenseSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Expense
+   */
+  omit?: Prisma.ExpenseOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ExpenseInclude<ExtArgs> | null
+  where?: Prisma.ExpenseWhereInput
+  orderBy?: Prisma.ExpenseOrderByWithRelationInput | Prisma.ExpenseOrderByWithRelationInput[]
+  cursor?: Prisma.ExpenseWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ExpenseScalarFieldEnum | Prisma.ExpenseScalarFieldEnum[]
+}
+
+/**
+ * Tenant.disbursements
+ */
+export type Tenant$disbursementsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Disbursement
+   */
+  select?: Prisma.DisbursementSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Disbursement
+   */
+  omit?: Prisma.DisbursementOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DisbursementInclude<ExtArgs> | null
+  where?: Prisma.DisbursementWhereInput
+  orderBy?: Prisma.DisbursementOrderByWithRelationInput | Prisma.DisbursementOrderByWithRelationInput[]
+  cursor?: Prisma.DisbursementWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DisbursementScalarFieldEnum | Prisma.DisbursementScalarFieldEnum[]
 }
 
 /**

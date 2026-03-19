@@ -32,7 +32,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Wrench } from "lucide-react";
+import { Wrench, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 const maintenanceSchema = z.object({
@@ -40,6 +40,8 @@ const maintenanceSchema = z.object({
     category: z.string().min(1, "Category is required"),
     description: z.string().min(5, "Please provide more details"),
     urgency: z.string().min(1, "Urgency is required"),
+    assignedToName: z.string().optional(),
+    cost: z.string().optional(),
 });
 
 export function CreateMaintenanceDialog({ onSuccess }: { onSuccess: () => void }) {
@@ -51,7 +53,7 @@ export function CreateMaintenanceDialog({ onSuccess }: { onSuccess: () => void }
 
     const form = useForm<z.infer<typeof maintenanceSchema>>({
         resolver: zodResolver(maintenanceSchema),
-        defaultValues: { unitId: "", category: "", description: "", urgency: "Medium" },
+        defaultValues: { unitId: "", category: "", description: "", urgency: "MEDIUM", assignedToName: "", cost: "" },
     });
 
     useEffect(() => {
@@ -74,7 +76,14 @@ export function CreateMaintenanceDialog({ onSuccess }: { onSuccess: () => void }
     async function onSubmit(values: z.infer<typeof maintenanceSchema>) {
         setIsLoading(true);
         try {
-            await api.post("/maintenance", values);
+            // Clean up the payload before sending to the backend
+            const payload = {
+                ...values,
+                assignedToName: values.assignedToName || undefined,
+                cost: values.cost ? parseInt(values.cost, 10) : undefined,
+            };
+
+            await api.post("/maintenance", payload);
             toast.success("Maintenance request logged.");
             form.reset();
             setOpen(false);
@@ -91,7 +100,7 @@ export function CreateMaintenanceDialog({ onSuccess }: { onSuccess: () => void }
             <DialogTrigger asChild>
                 <Button><Wrench className="mr-2 h-4 w-4" /> Log Issue</Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-md">
                 <DialogHeader>
                     <DialogTitle>Log Maintenance Request</DialogTitle>
                     <DialogDescription>Fill out the details below to log a new issue for your property.</DialogDescription>
@@ -99,8 +108,6 @@ export function CreateMaintenanceDialog({ onSuccess }: { onSuccess: () => void }
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
-
-                            {/* FIXED: Using standalone Label instead of FormLabel since this isn't in the FormField context */}
                             <div className="space-y-2 pt-2">
                                 <Label>Property</Label>
                                 <Select onValueChange={setSelectedProperty} value={selectedProperty}>
@@ -145,6 +152,7 @@ export function CreateMaintenanceDialog({ onSuccess }: { onSuccess: () => void }
                                                 <SelectItem value="General">General</SelectItem>
                                             </SelectContent>
                                         </Select>
+                                        <FormMessage />
                                     </FormItem>
                                 )}
                             />
@@ -157,12 +165,14 @@ export function CreateMaintenanceDialog({ onSuccess }: { onSuccess: () => void }
                                         <Select onValueChange={field.onChange} value={field.value}>
                                             <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                                             <SelectContent>
-                                                <SelectItem value="Critical">Critical</SelectItem>
-                                                <SelectItem value="High">High</SelectItem>
-                                                <SelectItem value="Medium">Medium</SelectItem>
-                                                <SelectItem value="Low">Low</SelectItem>
+                                                {/* Standardized to uppercase to match UI badges */}
+                                                <SelectItem value="CRITICAL">Critical</SelectItem>
+                                                <SelectItem value="HIGH">High</SelectItem>
+                                                <SelectItem value="MEDIUM">Medium</SelectItem>
+                                                <SelectItem value="LOW">Low</SelectItem>
                                             </SelectContent>
                                         </Select>
+                                        <FormMessage />
                                     </FormItem>
                                 )}
                             />
@@ -180,8 +190,34 @@ export function CreateMaintenanceDialog({ onSuccess }: { onSuccess: () => void }
                             )}
                         />
 
+                        <div className="grid grid-cols-2 gap-4 border-t pt-4 mt-2">
+                            <FormField
+                                control={form.control}
+                                name="assignedToName"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-muted-foreground">Vendor (Optional)</FormLabel>
+                                        <FormControl><Input placeholder="e.g. John Plumber" {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="cost"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-muted-foreground">Cost in KES (Optional)</FormLabel>
+                                        <FormControl><Input type="number" placeholder="0" {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+
                         <div className="flex justify-end pt-4">
                             <Button type="submit" disabled={isLoading}>
+                                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                                 {isLoading ? "Saving..." : "Submit Request"}
                             </Button>
                         </div>

@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards, UseInterceptors, Res, StreamableFile } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { ReportsService } from './reports.service.js';
 import { GetReportsQueryDto } from './dto/reports.dto.js';
@@ -54,6 +54,49 @@ export class ReportsController {
             parseInt(year, 10)
         );
         return { success: true, data };
+    }
+
+    @ApiOperation({ summary: 'Download a monthly property statement as a PDF' })
+    @ApiQuery({ name: 'month', type: String, required: true, example: '2026-03', description: 'Year-month string (e.g., 2026-03)' })
+    @ApiQuery({ name: 'propertyId', type: String, required: true, description: 'ID of the property' })
+    @Get('statement/download')
+    async downloadStatement(
+        @Query('month') month: string,
+        @Query('propertyId') propertyId: string,
+        @Res({ passthrough: true }) res: any,
+    ): Promise<StreamableFile> {
+        // Parse "2026-03" into month and year numbers
+        const [yearStr, monthStr] = month.split('-');
+        const yearNum = parseInt(yearStr, 10);
+        const monthNum = parseInt(monthStr, 10);
+
+        // Reuse existing income report logic to gather data
+        const report = await this.reportsService.getPropertyIncomeReport(propertyId, monthNum, yearNum);
+
+        // Calculate basic financials for the PDF
+        const grossIncome = report.summary.expectedIncomeInCents;
+        const managementFee = Math.floor(grossIncome * 0.10);
+        const expenses = report.summary.arrearsInCents;
+        const netPayout = grossIncome - managementFee - expenses;
+
+        // Generate the PDF buffer
+        const pdfBuffer = await this.reportsService.generateOwnerStatementPdf({
+            ownerName: report.property.name,
+            month,
+            grossIncome,
+            managementFee,
+            expenses,
+            netPayout,
+            propertyNames: [report.property.name],
+        });
+
+        // Set response headers for file download
+        res.set({
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': `attachment; filename="Statement_${month}.pdf"`,
+        });
+
+        return new StreamableFile(pdfBuffer);
     }
 
 }

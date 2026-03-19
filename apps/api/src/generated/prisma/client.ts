@@ -87,3 +87,18 @@ export type MaintenanceRequest = Prisma.MaintenanceRequestModel
  * 
  */
 export type Document = Prisma.DocumentModel
+/**
+ * Model AuditLog
+ * 
+ */
+export type AuditLog = Prisma.AuditLogModel
+/**
+ * Model Expense
+ * 
+ */
+export type Expense = Prisma.ExpenseModel
+/**
+ * Model Disbursement
+ * 
+ */
+export type Disbursement = Prisma.DisbursementModel

@@ -20,8 +20,18 @@ export type MaintenanceRequestModel = runtime.Types.Result.DefaultSelection<Pris
 
 export type AggregateMaintenanceRequest = {
   _count: MaintenanceRequestCountAggregateOutputType | null
+  _avg: MaintenanceRequestAvgAggregateOutputType | null
+  _sum: MaintenanceRequestSumAggregateOutputType | null
   _min: MaintenanceRequestMinAggregateOutputType | null
   _max: MaintenanceRequestMaxAggregateOutputType | null
+}
+
+export type MaintenanceRequestAvgAggregateOutputType = {
+  cost: number | null
+}
+
+export type MaintenanceRequestSumAggregateOutputType = {
+  cost: number | null
 }
 
 export type MaintenanceRequestMinAggregateOutputType = {
@@ -34,6 +44,10 @@ export type MaintenanceRequestMinAggregateOutputType = {
   status: $Enums.MaintenanceStatus | null
   createdAt: Date | null
   updatedAt: Date | null
+  cost: number | null
+  assignedToName: string | null
+  assignedToPhone: string | null
+  invoiceReceiptUrl: string | null
 }
 
 export type MaintenanceRequestMaxAggregateOutputType = {
@@ -46,6 +60,10 @@ export type MaintenanceRequestMaxAggregateOutputType = {
   status: $Enums.MaintenanceStatus | null
   createdAt: Date | null
   updatedAt: Date | null
+  cost: number | null
+  assignedToName: string | null
+  assignedToPhone: string | null
+  invoiceReceiptUrl: string | null
 }
 
 export type MaintenanceRequestCountAggregateOutputType = {
@@ -58,9 +76,21 @@ export type MaintenanceRequestCountAggregateOutputType = {
   status: number
   createdAt: number
   updatedAt: number
+  cost: number
+  assignedToName: number
+  assignedToPhone: number
+  invoiceReceiptUrl: number
   _all: number
 }
 
+
+export type MaintenanceRequestAvgAggregateInputType = {
+  cost?: true
+}
+
+export type MaintenanceRequestSumAggregateInputType = {
+  cost?: true
+}
 
 export type MaintenanceRequestMinAggregateInputType = {
   id?: true
@@ -72,6 +102,10 @@ export type MaintenanceRequestMinAggregateInputType = {
   status?: true
   createdAt?: true
   updatedAt?: true
+  cost?: true
+  assignedToName?: true
+  assignedToPhone?: true
+  invoiceReceiptUrl?: true
 }
 
 export type MaintenanceRequestMaxAggregateInputType = {
@@ -84,6 +118,10 @@ export type MaintenanceRequestMaxAggregateInputType = {
   status?: true
   createdAt?: true
   updatedAt?: true
+  cost?: true
+  assignedToName?: true
+  assignedToPhone?: true
+  invoiceReceiptUrl?: true
 }
 
 export type MaintenanceRequestCountAggregateInputType = {
@@ -96,6 +134,10 @@ export type MaintenanceRequestCountAggregateInputType = {
   status?: true
   createdAt?: true
   updatedAt?: true
+  cost?: true
+  assignedToName?: true
+  assignedToPhone?: true
+  invoiceReceiptUrl?: true
   _all?: true
 }
 
@@ -137,6 +179,18 @@ export type MaintenanceRequestAggregateArgs<ExtArgs extends runtime.Types.Extens
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: MaintenanceRequestAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: MaintenanceRequestSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: MaintenanceRequestMinAggregateInputType
@@ -167,6 +221,8 @@ export type MaintenanceRequestGroupByArgs<ExtArgs extends runtime.Types.Extensio
   take?: number
   skip?: number
   _count?: MaintenanceRequestCountAggregateInputType | true
+  _avg?: MaintenanceRequestAvgAggregateInputType
+  _sum?: MaintenanceRequestSumAggregateInputType
   _min?: MaintenanceRequestMinAggregateInputType
   _max?: MaintenanceRequestMaxAggregateInputType
 }
@@ -181,7 +237,13 @@ export type MaintenanceRequestGroupByOutputType = {
   status: $Enums.MaintenanceStatus
   createdAt: Date
   updatedAt: Date
+  cost: number | null
+  assignedToName: string | null
+  assignedToPhone: string | null
+  invoiceReceiptUrl: string | null
   _count: MaintenanceRequestCountAggregateOutputType | null
+  _avg: MaintenanceRequestAvgAggregateOutputType | null
+  _sum: MaintenanceRequestSumAggregateOutputType | null
   _min: MaintenanceRequestMinAggregateOutputType | null
   _max: MaintenanceRequestMaxAggregateOutputType | null
 }
@@ -214,6 +276,10 @@ export type MaintenanceRequestWhereInput = {
   status?: Prisma.EnumMaintenanceStatusFilter<"MaintenanceRequest"> | $Enums.MaintenanceStatus
   createdAt?: Prisma.DateTimeFilter<"MaintenanceRequest"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MaintenanceRequest"> | Date | string
+  cost?: Prisma.IntNullableFilter<"MaintenanceRequest"> | number | null
+  assignedToName?: Prisma.StringNullableFilter<"MaintenanceRequest"> | string | null
+  assignedToPhone?: Prisma.StringNullableFilter<"MaintenanceRequest"> | string | null
+  invoiceReceiptUrl?: Prisma.StringNullableFilter<"MaintenanceRequest"> | string | null
   tenant?: Prisma.XOR<Prisma.TenantScalarRelationFilter, Prisma.TenantWhereInput>
   unit?: Prisma.XOR<Prisma.UnitScalarRelationFilter, Prisma.UnitWhereInput>
 }
@@ -228,6 +294,10 @@ export type MaintenanceRequestOrderByWithRelationInput = {
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  cost?: Prisma.SortOrderInput | Prisma.SortOrder
+  assignedToName?: Prisma.SortOrderInput | Prisma.SortOrder
+  assignedToPhone?: Prisma.SortOrderInput | Prisma.SortOrder
+  invoiceReceiptUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   tenant?: Prisma.TenantOrderByWithRelationInput
   unit?: Prisma.UnitOrderByWithRelationInput
 }
@@ -245,6 +315,10 @@ export type MaintenanceRequestWhereUniqueInput = Prisma.AtLeast<{
   status?: Prisma.EnumMaintenanceStatusFilter<"MaintenanceRequest"> | $Enums.MaintenanceStatus
   createdAt?: Prisma.DateTimeFilter<"MaintenanceRequest"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MaintenanceRequest"> | Date | string
+  cost?: Prisma.IntNullableFilter<"MaintenanceRequest"> | number | null
+  assignedToName?: Prisma.StringNullableFilter<"MaintenanceRequest"> | string | null
+  assignedToPhone?: Prisma.StringNullableFilter<"MaintenanceRequest"> | string | null
+  invoiceReceiptUrl?: Prisma.StringNullableFilter<"MaintenanceRequest"> | string | null
   tenant?: Prisma.XOR<Prisma.TenantScalarRelationFilter, Prisma.TenantWhereInput>
   unit?: Prisma.XOR<Prisma.UnitScalarRelationFilter, Prisma.UnitWhereInput>
 }, "id">
@@ -259,9 +333,15 @@ export type MaintenanceRequestOrderByWithAggregationInput = {
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  cost?: Prisma.SortOrderInput | Prisma.SortOrder
+  assignedToName?: Prisma.SortOrderInput | Prisma.SortOrder
+  assignedToPhone?: Prisma.SortOrderInput | Prisma.SortOrder
+  invoiceReceiptUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.MaintenanceRequestCountOrderByAggregateInput
+  _avg?: Prisma.MaintenanceRequestAvgOrderByAggregateInput
   _max?: Prisma.MaintenanceRequestMaxOrderByAggregateInput
   _min?: Prisma.MaintenanceRequestMinOrderByAggregateInput
+  _sum?: Prisma.MaintenanceRequestSumOrderByAggregateInput
 }
 
 export type MaintenanceRequestScalarWhereWithAggregatesInput = {
@@ -277,6 +357,10 @@ export type MaintenanceRequestScalarWhereWithAggregatesInput = {
   status?: Prisma.EnumMaintenanceStatusWithAggregatesFilter<"MaintenanceRequest"> | $Enums.MaintenanceStatus
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"MaintenanceRequest"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"MaintenanceRequest"> | Date | string
+  cost?: Prisma.IntNullableWithAggregatesFilter<"MaintenanceRequest"> | number | null
+  assignedToName?: Prisma.StringNullableWithAggregatesFilter<"MaintenanceRequest"> | string | null
+  assignedToPhone?: Prisma.StringNullableWithAggregatesFilter<"MaintenanceRequest"> | string | null
+  invoiceReceiptUrl?: Prisma.StringNullableWithAggregatesFilter<"MaintenanceRequest"> | string | null
 }
 
 export type MaintenanceRequestCreateInput = {
@@ -287,6 +371,10 @@ export type MaintenanceRequestCreateInput = {
   status?: $Enums.MaintenanceStatus
   createdAt?: Date | string
   updatedAt?: Date | string
+  cost?: number | null
+  assignedToName?: string | null
+  assignedToPhone?: string | null
+  invoiceReceiptUrl?: string | null
   tenant: Prisma.TenantCreateNestedOneWithoutMaintenanceRequestsInput
   unit: Prisma.UnitCreateNestedOneWithoutMaintenanceReqsInput
 }
@@ -301,6 +389,10 @@ export type MaintenanceRequestUncheckedCreateInput = {
   status?: $Enums.MaintenanceStatus
   createdAt?: Date | string
   updatedAt?: Date | string
+  cost?: number | null
+  assignedToName?: string | null
+  assignedToPhone?: string | null
+  invoiceReceiptUrl?: string | null
 }
 
 export type MaintenanceRequestUpdateInput = {
@@ -311,6 +403,10 @@ export type MaintenanceRequestUpdateInput = {
   status?: Prisma.EnumMaintenanceStatusFieldUpdateOperationsInput | $Enums.MaintenanceStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cost?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  assignedToName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedToPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invoiceReceiptUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tenant?: Prisma.TenantUpdateOneRequiredWithoutMaintenanceRequestsNestedInput
   unit?: Prisma.UnitUpdateOneRequiredWithoutMaintenanceReqsNestedInput
 }
@@ -325,6 +421,10 @@ export type MaintenanceRequestUncheckedUpdateInput = {
   status?: Prisma.EnumMaintenanceStatusFieldUpdateOperationsInput | $Enums.MaintenanceStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cost?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  assignedToName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedToPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invoiceReceiptUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type MaintenanceRequestCreateManyInput = {
@@ -337,6 +437,10 @@ export type MaintenanceRequestCreateManyInput = {
   status?: $Enums.MaintenanceStatus
   createdAt?: Date | string
   updatedAt?: Date | string
+  cost?: number | null
+  assignedToName?: string | null
+  assignedToPhone?: string | null
+  invoiceReceiptUrl?: string | null
 }
 
 export type MaintenanceRequestUpdateManyMutationInput = {
@@ -347,6 +451,10 @@ export type MaintenanceRequestUpdateManyMutationInput = {
   status?: Prisma.EnumMaintenanceStatusFieldUpdateOperationsInput | $Enums.MaintenanceStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cost?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  assignedToName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedToPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invoiceReceiptUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type MaintenanceRequestUncheckedUpdateManyInput = {
@@ -359,6 +467,10 @@ export type MaintenanceRequestUncheckedUpdateManyInput = {
   status?: Prisma.EnumMaintenanceStatusFieldUpdateOperationsInput | $Enums.MaintenanceStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cost?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  assignedToName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedToPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invoiceReceiptUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type MaintenanceRequestListRelationFilter = {
@@ -381,6 +493,14 @@ export type MaintenanceRequestCountOrderByAggregateInput = {
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  cost?: Prisma.SortOrder
+  assignedToName?: Prisma.SortOrder
+  assignedToPhone?: Prisma.SortOrder
+  invoiceReceiptUrl?: Prisma.SortOrder
+}
+
+export type MaintenanceRequestAvgOrderByAggregateInput = {
+  cost?: Prisma.SortOrder
 }
 
 export type MaintenanceRequestMaxOrderByAggregateInput = {
@@ -393,6 +513,10 @@ export type MaintenanceRequestMaxOrderByAggregateInput = {
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  cost?: Prisma.SortOrder
+  assignedToName?: Prisma.SortOrder
+  assignedToPhone?: Prisma.SortOrder
+  invoiceReceiptUrl?: Prisma.SortOrder
 }
 
 export type MaintenanceRequestMinOrderByAggregateInput = {
@@ -405,6 +529,14 @@ export type MaintenanceRequestMinOrderByAggregateInput = {
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  cost?: Prisma.SortOrder
+  assignedToName?: Prisma.SortOrder
+  assignedToPhone?: Prisma.SortOrder
+  invoiceReceiptUrl?: Prisma.SortOrder
+}
+
+export type MaintenanceRequestSumOrderByAggregateInput = {
+  cost?: Prisma.SortOrder
 }
 
 export type MaintenanceRequestCreateNestedManyWithoutTenantInput = {
@@ -495,6 +627,14 @@ export type EnumMaintenanceStatusFieldUpdateOperationsInput = {
   set?: $Enums.MaintenanceStatus
 }
 
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
 export type MaintenanceRequestCreateWithoutTenantInput = {
   id?: string
   category: string
@@ -503,6 +643,10 @@ export type MaintenanceRequestCreateWithoutTenantInput = {
   status?: $Enums.MaintenanceStatus
   createdAt?: Date | string
   updatedAt?: Date | string
+  cost?: number | null
+  assignedToName?: string | null
+  assignedToPhone?: string | null
+  invoiceReceiptUrl?: string | null
   unit: Prisma.UnitCreateNestedOneWithoutMaintenanceReqsInput
 }
 
@@ -515,6 +659,10 @@ export type MaintenanceRequestUncheckedCreateWithoutTenantInput = {
   status?: $Enums.MaintenanceStatus
   createdAt?: Date | string
   updatedAt?: Date | string
+  cost?: number | null
+  assignedToName?: string | null
+  assignedToPhone?: string | null
+  invoiceReceiptUrl?: string | null
 }
 
 export type MaintenanceRequestCreateOrConnectWithoutTenantInput = {
@@ -556,6 +704,10 @@ export type MaintenanceRequestScalarWhereInput = {
   status?: Prisma.EnumMaintenanceStatusFilter<"MaintenanceRequest"> | $Enums.MaintenanceStatus
   createdAt?: Prisma.DateTimeFilter<"MaintenanceRequest"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MaintenanceRequest"> | Date | string
+  cost?: Prisma.IntNullableFilter<"MaintenanceRequest"> | number | null
+  assignedToName?: Prisma.StringNullableFilter<"MaintenanceRequest"> | string | null
+  assignedToPhone?: Prisma.StringNullableFilter<"MaintenanceRequest"> | string | null
+  invoiceReceiptUrl?: Prisma.StringNullableFilter<"MaintenanceRequest"> | string | null
 }
 
 export type MaintenanceRequestCreateWithoutUnitInput = {
@@ -566,6 +718,10 @@ export type MaintenanceRequestCreateWithoutUnitInput = {
   status?: $Enums.MaintenanceStatus
   createdAt?: Date | string
   updatedAt?: Date | string
+  cost?: number | null
+  assignedToName?: string | null
+  assignedToPhone?: string | null
+  invoiceReceiptUrl?: string | null
   tenant: Prisma.TenantCreateNestedOneWithoutMaintenanceRequestsInput
 }
 
@@ -578,6 +734,10 @@ export type MaintenanceRequestUncheckedCreateWithoutUnitInput = {
   status?: $Enums.MaintenanceStatus
   createdAt?: Date | string
   updatedAt?: Date | string
+  cost?: number | null
+  assignedToName?: string | null
+  assignedToPhone?: string | null
+  invoiceReceiptUrl?: string | null
 }
 
 export type MaintenanceRequestCreateOrConnectWithoutUnitInput = {
@@ -615,6 +775,10 @@ export type MaintenanceRequestCreateManyTenantInput = {
   status?: $Enums.MaintenanceStatus
   createdAt?: Date | string
   updatedAt?: Date | string
+  cost?: number | null
+  assignedToName?: string | null
+  assignedToPhone?: string | null
+  invoiceReceiptUrl?: string | null
 }
 
 export type MaintenanceRequestUpdateWithoutTenantInput = {
@@ -625,6 +789,10 @@ export type MaintenanceRequestUpdateWithoutTenantInput = {
   status?: Prisma.EnumMaintenanceStatusFieldUpdateOperationsInput | $Enums.MaintenanceStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cost?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  assignedToName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedToPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invoiceReceiptUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   unit?: Prisma.UnitUpdateOneRequiredWithoutMaintenanceReqsNestedInput
 }
 
@@ -637,6 +805,10 @@ export type MaintenanceRequestUncheckedUpdateWithoutTenantInput = {
   status?: Prisma.EnumMaintenanceStatusFieldUpdateOperationsInput | $Enums.MaintenanceStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cost?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  assignedToName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedToPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invoiceReceiptUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type MaintenanceRequestUncheckedUpdateManyWithoutTenantInput = {
@@ -648,6 +820,10 @@ export type MaintenanceRequestUncheckedUpdateManyWithoutTenantInput = {
   status?: Prisma.EnumMaintenanceStatusFieldUpdateOperationsInput | $Enums.MaintenanceStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cost?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  assignedToName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedToPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invoiceReceiptUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type MaintenanceRequestCreateManyUnitInput = {
@@ -659,6 +835,10 @@ export type MaintenanceRequestCreateManyUnitInput = {
   status?: $Enums.MaintenanceStatus
   createdAt?: Date | string
   updatedAt?: Date | string
+  cost?: number | null
+  assignedToName?: string | null
+  assignedToPhone?: string | null
+  invoiceReceiptUrl?: string | null
 }
 
 export type MaintenanceRequestUpdateWithoutUnitInput = {
@@ -669,6 +849,10 @@ export type MaintenanceRequestUpdateWithoutUnitInput = {
   status?: Prisma.EnumMaintenanceStatusFieldUpdateOperationsInput | $Enums.MaintenanceStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cost?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  assignedToName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedToPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invoiceReceiptUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tenant?: Prisma.TenantUpdateOneRequiredWithoutMaintenanceRequestsNestedInput
 }
 
@@ -681,6 +865,10 @@ export type MaintenanceRequestUncheckedUpdateWithoutUnitInput = {
   status?: Prisma.EnumMaintenanceStatusFieldUpdateOperationsInput | $Enums.MaintenanceStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cost?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  assignedToName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedToPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invoiceReceiptUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type MaintenanceRequestUncheckedUpdateManyWithoutUnitInput = {
@@ -692,6 +880,10 @@ export type MaintenanceRequestUncheckedUpdateManyWithoutUnitInput = {
   status?: Prisma.EnumMaintenanceStatusFieldUpdateOperationsInput | $Enums.MaintenanceStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cost?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  assignedToName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedToPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invoiceReceiptUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -706,6 +898,10 @@ export type MaintenanceRequestSelect<ExtArgs extends runtime.Types.Extensions.In
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  cost?: boolean
+  assignedToName?: boolean
+  assignedToPhone?: boolean
+  invoiceReceiptUrl?: boolean
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
   unit?: boolean | Prisma.UnitDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["maintenanceRequest"]>
@@ -720,6 +916,10 @@ export type MaintenanceRequestSelectCreateManyAndReturn<ExtArgs extends runtime.
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  cost?: boolean
+  assignedToName?: boolean
+  assignedToPhone?: boolean
+  invoiceReceiptUrl?: boolean
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
   unit?: boolean | Prisma.UnitDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["maintenanceRequest"]>
@@ -734,6 +934,10 @@ export type MaintenanceRequestSelectUpdateManyAndReturn<ExtArgs extends runtime.
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  cost?: boolean
+  assignedToName?: boolean
+  assignedToPhone?: boolean
+  invoiceReceiptUrl?: boolean
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
   unit?: boolean | Prisma.UnitDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["maintenanceRequest"]>
@@ -748,9 +952,13 @@ export type MaintenanceRequestSelectScalar = {
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  cost?: boolean
+  assignedToName?: boolean
+  assignedToPhone?: boolean
+  invoiceReceiptUrl?: boolean
 }
 
-export type MaintenanceRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "unitId" | "category" | "description" | "urgency" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["maintenanceRequest"]>
+export type MaintenanceRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "unitId" | "category" | "description" | "urgency" | "status" | "createdAt" | "updatedAt" | "cost" | "assignedToName" | "assignedToPhone" | "invoiceReceiptUrl", ExtArgs["result"]["maintenanceRequest"]>
 export type MaintenanceRequestInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
   unit?: boolean | Prisma.UnitDefaultArgs<ExtArgs>
@@ -780,6 +988,10 @@ export type $MaintenanceRequestPayload<ExtArgs extends runtime.Types.Extensions.
     status: $Enums.MaintenanceStatus
     createdAt: Date
     updatedAt: Date
+    cost: number | null
+    assignedToName: string | null
+    assignedToPhone: string | null
+    invoiceReceiptUrl: string | null
   }, ExtArgs["result"]["maintenanceRequest"]>
   composites: {}
 }
@@ -1214,6 +1426,10 @@ export interface MaintenanceRequestFieldRefs {
   readonly status: Prisma.FieldRef<"MaintenanceRequest", 'MaintenanceStatus'>
   readonly createdAt: Prisma.FieldRef<"MaintenanceRequest", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"MaintenanceRequest", 'DateTime'>
+  readonly cost: Prisma.FieldRef<"MaintenanceRequest", 'Int'>
+  readonly assignedToName: Prisma.FieldRef<"MaintenanceRequest", 'String'>
+  readonly assignedToPhone: Prisma.FieldRef<"MaintenanceRequest", 'String'>
+  readonly invoiceReceiptUrl: Prisma.FieldRef<"MaintenanceRequest", 'String'>
 }
     
 

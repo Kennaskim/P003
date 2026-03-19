@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { useDropzone } from "react-dropzone";
-import axios from "axios";
-import { api } from "@/lib/axios";
-import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { uploadDocument } from "@/lib/api/documents";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
     Dialog,
     DialogContent,
@@ -14,126 +13,97 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import { UploadCloud, File, Loader2 } from "lucide-react";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { UploadCloud, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-export function UploadDocumentDialog() {
+export function UploadDocumentDialog({ onSuccess }: { onSuccess: () => void }) {
     const [open, setOpen] = useState(false);
-    const [isUploading, setIsUploading] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const [file, setFile] = useState<File | null>(null);
-    const queryClient = useQueryClient();
+    const [category, setCategory] = useState("NATIONAL_ID");
 
-    const onDrop = useCallback((acceptedFiles: File[]) => {
-        if (acceptedFiles.length > 0) {
-            setFile(acceptedFiles[0] ?? null);
+    const handleUpload = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!file) {
+            toast.error("Please select a file to upload.");
+            return;
         }
-    }, []);
 
-    const { getRootProps, getInputProps, isDragActive } = useDropzone({
-        onDrop,
-        maxFiles: 1,
-        maxSize: 10 * 1024 * 1024, // 10MB limit
-        accept: {
-            "application/pdf": [".pdf"],
-            "image/jpeg": [".jpg", ".jpeg"],
-            "image/png": [".png"],
-        },
-    });
-
-    const handleUpload = async () => {
-        if (!file) return;
-        setIsUploading(true);
+        // Must be less than 5MB
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error("File size must be less than 5MB.");
+            return;
+        }
 
         try {
-            // Step 1: Request Pre-signed URL from our NestJS API
-            const urlResponse = await api.post("/files/request-upload", {
-                fileName: file.name,
-                fileType: file.type,
-            });
+            setIsLoading(true);
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("category", category);
 
-            const { presignedUrl, fileKey } = urlResponse.data.data;
-
-            // Step 2: Upload directly to Cloudflare R2 / S3 using the pre-signed URL
-            await axios.put(presignedUrl, file, {
-                headers: {
-                    "Content-Type": file.type,
-                },
-            });
-
-            // Step 3: Confirm the upload with our API so it saves to the database
-            await api.post("/files/confirm", {
-                fileName: file.name,
-                fileKey: fileKey,
-                fileType: file.type,
-                fileSize: file.size,
-                entityType: "GENERAL",
-            });
-
-            toast.success("Document uploaded successfully!");
+            await uploadDocument(formData);
+            toast.success("Document uploaded successfully.");
             setFile(null);
             setOpen(false);
-
-            // ✅ Tell React Query to instantly refresh the Documents Table
-            queryClient.invalidateQueries({ queryKey: ['documents'] });
-        } catch (error: any) {
-            console.error(error);
-            toast.error("Failed to upload document. Please try again.");
+            onSuccess();
+        } catch (error) {
+            toast.error("Failed to upload document.");
         } finally {
-            setIsUploading(false);
+            setIsLoading(false);
         }
     };
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button>
-                    <UploadCloud className="mr-2 h-4 w-4" /> Upload Document
-                </Button>
+                <Button><UploadCloud className="mr-2 h-4 w-4" /> Upload Document</Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Upload Document</DialogTitle>
-                    <DialogDescription>
-                        Upload signed rental agreements, ID copies, or property photos (Max 10MB).
-                    </DialogDescription>
+                    <DialogDescription>Securely store IDs, agreements, and receipts.</DialogDescription>
                 </DialogHeader>
-
-                {!file ? (
-                    <div
-                        {...getRootProps()}
-                        className={`mt-4 flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-10 text-center transition-colors hover:bg-gray-50 cursor-pointer ${isDragActive ? "border-blue-500 bg-blue-50" : "border-gray-300"
-                            }`}
-                    >
-                        <input {...getInputProps()} />
-                        <UploadCloud className="mb-2 h-10 w-10 text-gray-400" />
-                        <p className="text-sm text-gray-600">
-                            <span className="font-semibold text-blue-600">Click to upload</span> or drag and drop
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">PDF, JPG, or PNG</p>
+                <form onSubmit={handleUpload} className="space-y-6 pt-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="category">Document Category</Label>
+                        <Select value={category} onValueChange={setCategory}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select Category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="NATIONAL_ID">National ID / Passport</SelectItem>
+                                <SelectItem value="AGREEMENT">Rental Agreement</SelectItem>
+                                <SelectItem value="RECEIPT">Payment/Maintenance Receipt</SelectItem>
+                                <SelectItem value="OTHER">Other</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
-                ) : (
-                    <div className="mt-4 flex flex-col items-center justify-between rounded-lg border p-4">
-                        <div className="flex items-center space-x-3 w-full">
-                            <File className="h-8 w-8 text-blue-500" />
-                            <div className="flex-1 truncate">
-                                <p className="text-sm font-medium text-gray-900 truncate">{file.name}</p>
-                                <p className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
-                            </div>
-                            <Button variant="ghost" size="sm" onClick={() => setFile(null)} disabled={isUploading}>
-                                Cancel
-                            </Button>
-                        </div>
-                        <Button className="w-full mt-4" onClick={handleUpload} disabled={isUploading}>
-                            {isUploading ? (
-                                <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading...
-                                </>
-                            ) : (
-                                "Confirm Upload"
-                            )}
+
+                    <div className="space-y-2">
+                        <Label htmlFor="file">Select File</Label>
+                        <Input
+                            id="file"
+                            type="file"
+                            accept=".pdf,.jpg,.jpeg,.png"
+                            onChange={(e) => setFile(e.target.files?.[0] || null)}
+                        />
+                        <p className="text-xs text-muted-foreground">Supported formats: PDF, JPG, PNG. Max size: 5MB.</p>
+                    </div>
+
+                    <div className="flex justify-end">
+                        <Button type="submit" disabled={isLoading || !file}>
+                            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                            {isLoading ? "Uploading..." : "Upload File"}
                         </Button>
                     </div>
-                )}
+                </form>
             </DialogContent>
         </Dialog>
     );

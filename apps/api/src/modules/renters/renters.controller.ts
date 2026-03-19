@@ -7,6 +7,7 @@ import { RolesGuard } from '../../common/guards/roles.guard.js';
 import { TenantInterceptor } from '../../common/interceptors/tenant.interceptor.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
 import { UserRole } from '../../generated/prisma/client.js';
+import { Audit } from '../../common/decorators/audit.decorator.js';
 
 @ApiTags('Renters')
 @ApiBearerAuth()
@@ -20,6 +21,7 @@ export class RentersController {
     @ApiOperation({ summary: 'Register a new renter' })
     @ApiResponse({ status: 201, description: 'Renter created successfully.' })
     @Post()
+    @Audit('CREATE_RENTER', 'RENTER')
     async create(@Body() createRenterDto: CreateRenterDto) {
         const data = await this.rentersService.create(createRenterDto);
         return { success: true, data, message: 'Renter created successfully' };
@@ -46,6 +48,7 @@ export class RentersController {
     @ApiResponse({ status: 200, description: 'Renter updated successfully.' })
     @ApiResponse({ status: 404, description: 'Renter not found.' })
     @Patch(':id')
+    @Audit('UPDATE_RENTER', 'RENTER')
     async update(@Param('id') id: string, @Body() updateRenterDto: UpdateRenterDto) {
         const data = await this.rentersService.update(id, updateRenterDto);
         return { success: true, data, message: 'Renter updated successfully' };
@@ -54,6 +57,7 @@ export class RentersController {
     @ApiOperation({ summary: 'Delete a renter (Soft Delete)' })
     @ApiResponse({ status: 200, description: 'Renter deleted successfully.' })
     @Delete(':id')
+    @Audit('DELETE_RENTER', 'RENTER')
     async remove(@Param('id') id: string) {
         await this.rentersService.remove(id);
         return { success: true, message: 'Renter deleted successfully' };
