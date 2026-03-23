@@ -4,7 +4,8 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { PrismaService } from '../../../prisma/prisma.service.js';
 import { InitiateStkPushDto } from './dto/mpesa.dto.js';
-import { PaymentStatus } from '../../generated/prisma/client.js';
+import { PaymentStatus } from '@prisma/client';
+import { SmsService } from '../sms/sms.service.js';
 
 @Injectable()
 export class MpesaService {
@@ -15,6 +16,7 @@ export class MpesaService {
         private config: ConfigService,
         private httpService: HttpService,
         private prisma: PrismaService,
+        private smsService: SmsService,
     ) {
         // Phase 4: Environment-aware routing
         const env = this.config.get<string>('NODE_ENV');
@@ -57,7 +59,7 @@ export class MpesaService {
         const password = Buffer.from(`${shortcode}${passkey}${timestamp}`).toString('base64');
 
         // Safaricom expects standard KES
-        const amountInKes = Math.floor(dto.amountInCents / 100);
+        const amountInKes = dto.amount;
 
         try {
             const response = await firstValueFrom(
@@ -86,7 +88,7 @@ export class MpesaService {
                     tenantId: invoice.tenantId, // Ensure tenant isolation
                     rentalAgreementId: invoice.rentalAgreementId,
                     rentInvoiceId: invoice.id,
-                    amount: dto.amountInCents,
+                    amount: amountInKes,
                     method: 'MPESA',
                     checkoutRequestId: response.data.CheckoutRequestID,
                     status: PaymentStatus.PENDING,
@@ -139,6 +141,15 @@ export class MpesaService {
 
         // Extract M-Pesa Receipt Number (e.g. QWE123RTY)
         const mpesaReceipt = payload.CallbackMetadata?.Item?.find((item: any) => item.Name === 'MpesaReceiptNumber')?.Value;
+        const paymentWithDetails = await this.prisma.client.payment.findUnique({
+            where: { id: payment.id },
+            include: {
+                rentalAgreement: { include: { renter: true } },
+                rentInvoice: true
+            }
+        });
+
+        if (!paymentWithDetails) return;
 
         // 2. ACID Transaction: Mark Payment as Completed AND Invoice as Paid simultaneously
         await this.prisma.client.$transaction(async (tx) => {
@@ -154,11 +165,52 @@ export class MpesaService {
             if (payment.rentInvoiceId) {
                 await tx.rentInvoice.update({
                     where: { id: payment.rentInvoiceId },
-                    data: { isPaid: true },
+                    data: { isPaid: true, paidAt: new Date() },
                 });
             }
         });
 
         this.logger.log(`Payment ${payment.id} successfully completed. Receipt: ${mpesaReceipt}`);
+
+        const renter = paymentWithDetails.rentalAgreement.renter;
+        const amountStr = paymentWithDetails.amount.toLocaleString();
+
+        // Example: "Confirmed. KES 15,000 received for Rent. Receipt: QWE123RTY. Thank you."
+        const smsMessage = `Confirmed. KES ${amountStr} received for Rent. Receipt: ${mpesaReceipt}. Thank you.`;
+
+        try {
+            await this.smsService.sendSms(renter.phone, smsMessage);
+            this.logger.log(`Receipt SMS sent to ${renter.phone}`);
+        } catch (error) {
+            this.logger.error(`Failed to send receipt SMS for payment ${payment.id}`, error);
+        }
+    }
+    async checkStkPushStatus(checkoutRequestId: string): Promise<any> {
+        const token = await this.getAccessToken();
+        const shortcode = this.config.getOrThrow('MPESA_SHORTCODE');
+        const passkey = this.config.getOrThrow('MPESA_PASSKEY');
+        const timestamp = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14);
+        const password = Buffer.from(`${shortcode}${passkey}${timestamp}`).toString('base64');
+
+        try {
+            const response = await firstValueFrom(
+                this.httpService.post(
+                    `${this.baseUrl}/mpesa/stkpushquery/v1/query`,
+                    {
+                        BusinessShortCode: shortcode,
+                        Password: password,
+                        Timestamp: timestamp,
+                        CheckoutRequestID: checkoutRequestId,
+                    },
+                    { headers: { Authorization: `Bearer ${token}` } },
+                ),
+            );
+            return response.data;
+        } catch (error: any) {
+            // Daraja returns HTTP 400 or 500 with a specific error payload if the transaction failed
+            // We catch it and return the payload so the cron job can process the exact failure reason
+            this.logger.error(`STK Query failed for ${checkoutRequestId}`, error.response?.data || error.message);
+            return error.response?.data || { errorMessage: 'Network error communicating with Safaricom' };
+        }
     }
 }

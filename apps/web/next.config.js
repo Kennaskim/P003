@@ -31,11 +31,13 @@ const sentryConfig = withSentryConfig(nextConfig, {
   // Route browser requests through a Next.js rewrite to circumvent ad-blockers
   // tunnelRoute: "/monitoring",
 
-  // Enables automatic instrumentation of Vercel Cron Monitors
-  automaticVercelMonitors: true,
-
-  // Tree-shaking options for reducing bundle size
-  disableLogger: true,
+  // Tre-shaking options for reducing bundle size
+  webpack: {
+    automaticVercelMonitors: true,
+    treeshake: {
+      removeDebugLogging: true,
+    },
+  },
 });
 
 export default sentryConfig;

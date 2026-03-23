@@ -5,7 +5,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../../common/guards/roles.guard.js';
 import { TenantInterceptor } from '../../common/interceptors/tenant.interceptor.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
-import { UserRole } from '../../generated/prisma/client.js';
+import { UserRole } from '@prisma/client';
 import { Audit } from '../../common/decorators/audit.decorator.js';
 
 @ApiTags('Super Admin')

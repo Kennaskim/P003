@@ -1,7 +1,5 @@
 generator client {
-  provider     = "prisma-client"
-  output       = "../src/generated/prisma"
-  moduleFormat = "cjs"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -38,21 +36,25 @@ enum PaymentStatus {
   COMPLETED
   FAILED
   CANCELLED
+  REFUNDED
 }
 
 enum MaintenanceStatus {
   SUBMITTED
+  IN_REVIEW
+  ASSIGNED
   IN_PROGRESS
-  RESOLVED
+  COMPLETED
+  CANCELLED
 }
 
 // ================= Models ================= //
 
 model Tenant {
-  id                 String    @id @default(uuid()) // [cite: 73]
+  id                 String    @id @default(uuid())
   name               String
   email              String    @unique
-  phone              String? // E.164 format: +254XXXXXXXXX [cite: 76]
+  phone              String? // E.164 format: +254XXXXXXXXX
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
   deletedAt          DateTime? // Soft delete 
@@ -60,6 +62,7 @@ model Tenant {
   subscriptionStatus String?   @default("TRIAL") // e.g., TRIAL, ACTIVE, EXPIRED
 
   users               User[]
+  owners              Owner[] // <-- ADDED: Relation to owners
   properties          Property[]
   units               Unit[]
   renters             Renter[]
@@ -73,37 +76,63 @@ model Tenant {
   disbursements       Disbursement[]
 }
 
+// <-- ADDED: Owner Model (Gap 13)
+model Owner {
+  id        String   @id @default(uuid())
+  tenantId  String
+  firstName String
+  lastName  String
+  email     String   @unique
+  phone     String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant        Tenant         @relation(fields: [tenantId], references: [id])
+  properties    Property[]
+  disbursements Disbursement[]
+
+  @@index([tenantId])
+}
+
 model User {
-  id        String    @id @default(uuid())
-  tenantId  String // Critical multi-tenancy enforcement 
-  email     String    @unique
-  password  String // Hashed
-  role      UserRole
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  id          String    @id @default(uuid())
+  tenantId    String // Critical multi-tenancy enforcement 
+  email       String    @unique
+  password    String // Hashed
+  firstName   String?
+  lastName    String?
+  role        UserRole
+  isActive    Boolean   @default(true)
+  lastLoginAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
 
   tenant    Tenant     @relation(fields: [tenantId], references: [id])
   auditLogs AuditLog[]
 
-  @@index([tenantId]) // [cite: 200]
+  @@index([tenantId])
 }
 
 model Property {
   id        String    @id @default(uuid())
   tenantId  String
+  ownerId   String? // <-- ADDED: Link to Owner
   name      String
-  address   String // Estate/area + town structure [cite: 126]
+  address   String // Estate/area + town structure
   type      String
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
   tenant   Tenant    @relation(fields: [tenantId], references: [id])
+  owner    Owner?    @relation(fields: [ownerId], references: [id]) // <-- ADDED
   units    Unit[]
   expenses Expense[]
 
   @@index([tenantId])
+  @@index([ownerId]) // <-- ADDED
 }
 
 model Unit {
@@ -123,7 +152,7 @@ model Unit {
   maintenanceReqs  MaintenanceRequest[]
 
   @@index([tenantId])
-  @@index([propertyId, status]) // Filter vacant/occupied units [cite: 200]
+  @@index([propertyId, status])
 }
 
 model Renter {
@@ -132,7 +161,9 @@ model Renter {
   firstName        String
   lastName         String
   phone            String       @unique // E.164 format
-  nationalId       String // 8 digits standard [cite: 125]
+  email            String? // <-- ADDED (Gap 17)
+  nationalId       String // 8 digits standard
+  idType           String       @default("NATIONAL_ID") // <-- ADDED (Gap 17)
   emergencyContact String?
   status           RenterStatus @default(ACTIVE)
   createdAt        DateTime     @default(now())
@@ -146,17 +177,22 @@ model Renter {
 }
 
 model RentalAgreement {
-  id         String    @id @default(uuid())
-  tenantId   String
-  unitId     String
-  renterId   String
-  startDate  DateTime
-  endDate    DateTime? // Nullable since it's a monthly rolling agreement [cite: 8, 124]
-  rentAmount Int // Locked in amount for this specific agreement
-  deposit    Int
-  isActive   Boolean   @default(true)
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  id              String    @id @default(uuid())
+  tenantId        String
+  unitId          String
+  renterId        String
+  startDate       DateTime
+  endDate         DateTime? // Nullable since it's a monthly rolling agreement
+  rentAmount      Int // Locked in amount for this specific agreement
+  deposit         Int
+  depositPaid     Boolean   @default(false)
+  paymentDueDay   Int       @default(1)
+  gracePeriodDays Int       @default(5)
+  lateFeeAmount   Int       @default(0) // Flat fee in KES
+  lateFeePercent  Float? // % of monthly rent
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   tenant       Tenant        @relation(fields: [tenantId], references: [id])
   unit         Unit          @relation(fields: [unitId], references: [id])
@@ -168,22 +204,25 @@ model RentalAgreement {
 }
 
 model RentInvoice {
-  id                String   @id @default(uuid())
+  id                String    @id @default(uuid())
   tenantId          String
   rentalAgreementId String
+  invoiceNumber     String    @unique // e.g., INV-2026-03-001
+  period            String // e.g., "2026-03"
   amount            Int
   dueDate           DateTime
-  isPaid            Boolean  @default(false)
-  lateFeeApplied    Int      @default(0)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  isPaid            Boolean   @default(false)
+  paidAt            DateTime?
+  lateFeeApplied    Int       @default(0) // <-- FIXED: Int instead of Boolean to match cron job logic
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   tenant          Tenant          @relation(fields: [tenantId], references: [id])
   rentalAgreement RentalAgreement @relation(fields: [rentalAgreementId], references: [id])
   payments        Payment[]
 
   @@index([tenantId])
-  @@index([dueDate, isPaid]) // Overdue invoice detection [cite: 200]
+  @@index([dueDate, isPaid])
 }
 
 model Payment {
@@ -194,7 +233,7 @@ model Payment {
   amount            Int
   method            String // "MPESA" or "MANUAL"
   mpesaReceipt      String?       @unique // E.g., QWE123RTY
-  checkoutRequestId String?       @unique // Daraja STK Push tracking [cite: 209]
+  checkoutRequestId String?       @unique // Daraja STK Push tracking
   status            PaymentStatus @default(PENDING)
   rawResponse       Json? // Audit log of Daraja response 
   createdAt         DateTime      @default(now())
@@ -205,7 +244,7 @@ model Payment {
   rentInvoice     RentInvoice?    @relation(fields: [rentInvoiceId], references: [id])
 
   @@index([tenantId])
-  @@index([rentalAgreementId, status, createdAt]) // Payment history queries [cite: 200]
+  @@index([rentalAgreementId, status, createdAt])
 }
 
 model MaintenanceRequest {
@@ -214,7 +253,7 @@ model MaintenanceRequest {
   unitId            String
   category          String
   description       String
-  urgency           String // E.g., Critical, High, Medium, Low [cite: 327]
+  urgency           String // E.g., Critical, High, Medium, Low
   status            MaintenanceStatus @default(SUBMITTED)
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
@@ -227,7 +266,7 @@ model MaintenanceRequest {
   unit   Unit   @relation(fields: [unitId], references: [id])
 
   @@index([tenantId])
-  @@index([unitId, status]) // Active work orders per unit [cite: 200]
+  @@index([unitId, status])
 }
 
 model Document {
@@ -289,7 +328,7 @@ model Expense {
 model Disbursement {
   id        String   @id @default(uuid())
   tenantId  String
-  ownerId   String // References an owner (can map to a User with 'OWNER' role or a separate Owner model)
+  ownerId   String // <-- ADDED: Links explicitly to Owner model
   amount    Int // Net payout in KES
   period    String // e.g., "2026-03"
   status    String   @default("PENDING") // PENDING, PROCESSING, COMPLETED
@@ -298,6 +337,8 @@ model Disbursement {
   updatedAt DateTime @updatedAt
 
   tenant Tenant @relation(fields: [tenantId], references: [id])
+  owner  Owner  @relation(fields: [ownerId], references: [id]) // <-- ADDED
 
   @@index([tenantId, period])
+  @@index([ownerId]) // <-- ADDED
 }

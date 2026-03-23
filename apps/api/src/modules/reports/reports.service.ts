@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service.js';
 import { GetReportsQueryDto } from './dto/reports.dto.js';
-import { UnitStatus, Prisma } from '../../generated/prisma/client.js';
+import { UnitStatus, Prisma } from '@prisma/client';
 import PDFDocument from 'pdfkit'; // <-- Added for PDF generation
 
 @Injectable()

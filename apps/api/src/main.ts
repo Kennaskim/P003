@@ -1,5 +1,6 @@
 import { NestFactory, HttpAdapterHost } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
@@ -9,6 +10,7 @@ import { AppModule } from './app.module';
 import { SentryFilter } from './common/filters/sentry.filter';
 
 async function bootstrap() {
+  // 1. Initialize Sentry before the app starts
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
     integrations: [nodeProfilingIntegration()],
@@ -18,24 +20,27 @@ async function bootstrap() {
   });
 
   const app = await NestFactory.create(AppModule);
+  const configService = app.get(ConfigService);
 
+  // 2. Global Middleware
   app.use(helmet());
   app.use(cookieParser());
+
+  const frontendUrl = configService.getOrThrow<string>('FRONTEND_URL');
+  const isDev = configService.get<string>('NODE_ENV') !== 'production';
+
+  const allowedOrigins = isDev
+    ? [frontendUrl, 'http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002']
+    : [frontendUrl];
+
   app.enableCors({
-    origin: [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'http://localhost:3002',
-      process.env.FRONTEND_URL || '',
-    ],
+    origin: allowedOrigins,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true, // Required for cookies
   });
 
-  // 4. Set your global API prefix
   app.setGlobalPrefix('api/v1');
 
-  // 5. Global Validation (Strips out malicious extra fields not defined in your DTOs)
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -69,9 +74,12 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/v1/docs', app, document);
 
-  const port = process.env.PORT ?? 3000;
+  // 8. Start the Server
+  const port = configService.get<number>('PORT') || 3001;
   await app.listen(port);
-  console.log(`API running securely on port ${port}`);
-  console.log(`Swagger running on http://localhost:${port}/api/v1/docs`);
+
+  Logger.log(`API running securely on port ${port}`, 'Bootstrap');
+  Logger.log(`Strict CORS allowed origins: ${allowedOrigins.join(', ')}`, 'Bootstrap');
+  Logger.log(`Swagger running on http://localhost:${port}/api/v1/docs`, 'Bootstrap');
 }
 bootstrap();

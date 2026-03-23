@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Res, Req, UseGuards } from '@nestjs/common';
+import { Controller, UnauthorizedException, Post, Body, Res, Req, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import express from 'express';
@@ -76,5 +76,41 @@ export class AuthController {
             sameSite: 'lax',
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
         });
+    }
+    @ApiOperation({ summary: 'Rotate refresh token' })
+    @ApiResponse({ status: 200, description: 'New access token generated.' })
+    @Post('refresh')
+    async refresh(@Req() req: express.Request, @Res({ passthrough: true }) res: express.Response) {
+        const refreshToken = req.cookies?.['refresh_token'];
+
+        if (!refreshToken) {
+            throw new UnauthorizedException('No refresh token found');
+        }
+
+        const { accessToken, refreshToken: newRefreshToken, user } = await this.authService.refresh(refreshToken);
+
+        // Set the new rotated refresh token
+        this.setRefreshCookie(res, newRefreshToken);
+
+        return {
+            success: true,
+            data: { accessToken, user },
+            message: 'Token refreshed successfully',
+        };
+    }
+    @ApiOperation({ summary: 'Request password reset email' })
+    @Post('forgot-password')
+    async forgotPassword(@Body('email') email: string) {
+        await this.authService.requestPasswordReset(email);
+        // Always return success to prevent email enumeration attacks
+        return { success: true, message: 'If that email exists, a reset link has been sent.' };
+    }
+
+    @ApiOperation({ summary: 'Reset password using token' })
+    @Post('reset-password')
+    async resetPassword(@Body() body: any) {
+        const { token, newPassword } = body;
+        await this.authService.resetPassword(token, newPassword);
+        return { success: true, message: 'Password has been successfully reset.' };
     }
 }

@@ -13,10 +13,10 @@ export class InitiateStkPushDto {
     @Matches(/^254[17]\d{8}$/, { message: 'Phone number must be in format 2547XXXXXXXX or 2541XXXXXXXX' })
     phone: string;
 
-    @ApiProperty({ example: 1500000, description: 'Amount to charge via M-Pesa in CENTS' })
+    @ApiProperty({ example: 15000, description: 'Amount in standard KES' })
     @IsInt()
-    @Min(100) // Minimum 1 KES
-    amountInCents: number;
+    @Min(1) // Minimum 1 KES
+    amount: number;
 }
 
 // Strictly typing the callback items to eliminate 'any'

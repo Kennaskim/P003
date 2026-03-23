@@ -8,7 +8,7 @@ import { RolesGuard } from '../../common/guards/roles.guard.js';
 import { TenantInterceptor } from '../../common/interceptors/tenant.interceptor.js';
 import { SafaricomIpGuard } from '../../common/guards/safaricom-ip.guard.js'; // <-- Import new guard
 import { Roles } from '../../common/decorators/roles.decorator.js';
-import { UserRole } from '../../generated/prisma/client.js';
+import { UserRole } from '@prisma/client';
 import { Throttle, SkipThrottle } from '@nestjs/throttler';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 

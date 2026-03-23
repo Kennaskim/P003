@@ -1,7 +1,7 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service.js';
 import { CreateRentalAgreementDto } from './dto/rental-agreement.dto.js';
-import { UnitStatus } from '../../generated/prisma/client.js';
+import { UnitStatus } from '@prisma/client';
 
 @Injectable()
 export class RentalAgreementsService {

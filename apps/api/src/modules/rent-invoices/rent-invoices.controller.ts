@@ -6,7 +6,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { TenantInterceptor } from '../../common/interceptors/tenant.interceptor';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { UserRole } from '../../generated/prisma/client.js';
+import { UserRole } from '@prisma/client';
 
 @ApiTags('Billing & Invoices')
 @ApiBearerAuth()

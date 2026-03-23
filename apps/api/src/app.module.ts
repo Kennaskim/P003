@@ -27,13 +27,12 @@ import { UsersModule } from './modules/users/users.module';
 import { TenantsModule } from './modules/tenants/tenants.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { OwnerPortalModule } from './modules/owner-portal/owner-portal.module';
+import { OwnersModule } from './modules/owners/owners.module.js';
 import { NotificationsModule } from './modules/notifications/notifications.module';
-
 
 // Security
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 
 @Module({
@@ -51,22 +50,33 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     // BullMQ / Redis Configuration 
     BullModule.forRootAsync({
       imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => {
+        // Parse the single REDIS_URL provided by hosting platforms
+        const redisUrl = configService.getOrThrow<string>('REDIS_URL');
+        const url = new URL(redisUrl);
+
+        return {
+          connection: {
+            host: url.hostname,
+            port: parseInt(url.port, 10) || 6379,
+            password: url.password || undefined,
+            username: url.username || undefined,
+            tls: redisUrl.startsWith('rediss://') ? {} : undefined,
+          },
+        };
+      },
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        connection: {
-          host: config.get<string>('REDIS_HOST', 'localhost'),
-          port: config.get<number>('REDIS_PORT', 6379),
-        },
-      }),
     }),
 
     PassportModule,
+
+    // GAP 26 FIXED: Strict JWT Configuration
     JwtModule.registerAsync({
       global: true,
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('JWT_SECRET') || 'super-secret-development-key-change-in-production',
-        signOptions: { expiresIn: (config.get('JWT_EXPIRES_IN') ?? '1d') as any },
+        secret: config.getOrThrow<string>('JWT_SECRET'),
+        signOptions: { expiresIn: (config.get<string>('JWT_EXPIRES_IN') || '15m') as any },
       }),
     }),
 
@@ -89,6 +99,7 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     JobsModule,
     AdminModule,
     OwnerPortalModule,
+    OwnersModule,
     NotificationsModule,
   ],
 

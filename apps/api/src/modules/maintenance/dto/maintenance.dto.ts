@@ -1,5 +1,5 @@
 import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, Min } from 'class-validator';
-import { MaintenanceStatus } from '../../../generated/prisma/client.js';
+import { MaintenanceStatus } from '@prisma/client';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 
 export class CreateMaintenanceDto {

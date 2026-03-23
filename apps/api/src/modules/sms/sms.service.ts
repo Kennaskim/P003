@@ -7,9 +7,13 @@ export class SmsService {
     private readonly logger = new Logger(SmsService.name);
     private readonly sms: any;
     private readonly isDev: boolean;
+    private readonly senderId: string | undefined;
 
     constructor(private configService: ConfigService) {
         this.isDev = this.configService.get<string>('NODE_ENV') !== 'production';
+
+        // GAP 28 FIXED: Safely pull the sender ID. If it's not set, it remains undefined.
+        this.senderId = this.configService.get<string>('AT_SENDER_ID');
 
         // Initialize Africa's Talking SDK
         const credentials = {
@@ -21,34 +25,32 @@ export class SmsService {
         this.sms = at.SMS;
     }
 
-    /**
-     * Sends an SMS message to a specific Kenyan phone number
-     */
     async sendSms(to: string, message: string): Promise<boolean> {
-        // Ensure the phone number has the + prefix for Africa's Talking
         const formattedPhone = to.startsWith('+') ? to : `+${to}`;
 
         this.logger.log(`Preparing to send SMS to ${formattedPhone}`);
 
         if (this.isDev) {
             this.logger.debug(`[DEV MOCK SMS] To: ${formattedPhone} | Message: ${message}`);
-            return true; // Don't actually spend SMS credits in development
+            return true;
         }
 
         try {
-            const options = {
+            const options: any = {
                 to: [formattedPhone],
                 message: message,
-                // Uncomment and add your registered shortcode/alphanumeric sender ID here if you have one
-                // from: this.configService.get<string>('AT_SENDER_ID'), 
             };
+
+            if (this.senderId) {
+                options.from = this.senderId;
+            }
 
             const response = await this.sms.send(options);
             this.logger.log(`SMS sent successfully to ${formattedPhone}. AT Response:`, response);
             return true;
         } catch (error) {
             this.logger.error(`Failed to send SMS to ${formattedPhone}`, error);
-            throw error; // Let BullMQ catch this so it can retry the job
+            throw error;
         }
     }
 }

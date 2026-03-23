@@ -648,10 +648,6 @@ export type RentalAgreementUncheckedUpdateManyWithoutRenterNestedInput = {
   deleteMany?: Prisma.RentalAgreementScalarWhereInput | Prisma.RentalAgreementScalarWhereInput[]
 }
 
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
-}
-
 export type RentalAgreementCreateNestedOneWithoutRentInvoicesInput = {
   create?: Prisma.XOR<Prisma.RentalAgreementCreateWithoutRentInvoicesInput, Prisma.RentalAgreementUncheckedCreateWithoutRentInvoicesInput>
   connectOrCreate?: Prisma.RentalAgreementCreateOrConnectWithoutRentInvoicesInput
