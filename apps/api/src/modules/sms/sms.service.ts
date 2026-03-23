@@ -11,11 +11,8 @@ export class SmsService {
 
     constructor(private configService: ConfigService) {
         this.isDev = this.configService.get<string>('NODE_ENV') !== 'production';
-
-        // GAP 28 FIXED: Safely pull the sender ID. If it's not set, it remains undefined.
         this.senderId = this.configService.get<string>('AT_SENDER_ID');
 
-        // Initialize Africa's Talking SDK
         const credentials = {
             apiKey: this.configService.getOrThrow<string>('AT_API_KEY'),
             username: this.configService.getOrThrow<string>('AT_USERNAME'),

@@ -3,11 +3,12 @@ import { PrismaService } from '../../../prisma/prisma.service.js';
 import { InviteUserDto, UpdateRoleDto } from './dto/users.dto.js';
 import { AppException } from '../../common/exceptions/app.exception.js';
 import * as bcrypt from 'bcrypt';
+import { NotificationsService } from '../notifications/notifications.service.js';
 // import { ResendService } from '../notifications/resend.service.js'; // Assuming you have an email service
 
 @Injectable()
 export class UsersService {
-    constructor(private prisma: PrismaService) { }
+    constructor(private prisma: PrismaService, private notificationsService: NotificationsService) { }
 
     async getTeamMembers(tenantId: string) {
         return this.prisma.client.user.findMany({
@@ -40,6 +41,9 @@ export class UsersService {
             },
             select: { id: true, email: true, role: true }
         });
+        const subject = `You've been invited to join the RMS Portal`;
+        const body = `Hello ${dto.firstName},<br><br>You've been invited to join our management system. Your temporary password is: <b>${tempPassword}</b><br><br>Please login and change it immediately.`;
+        await this.notificationsService.sendEmail(dto.email, subject, body);
 
         // 4. TODO: Send invitation email via Resend with tempPassword and login link
         // await this.resendService.sendTeamInviteEmail(dto.email, tempPassword);

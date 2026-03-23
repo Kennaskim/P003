@@ -59,7 +59,7 @@ export class BillingCronService {
                         await this.smsQueue.add('send-invoice-sms', {
                             renterName: agreement.renter.firstName,
                             phone: agreement.renter.phone,
-                            amountInCents: agreement.rentAmount,
+                            amountInKes: agreement.rentAmount,
                             dueDate: dueDate.toISOString(),
                             unitName: agreement.unit.name,
                         }, {

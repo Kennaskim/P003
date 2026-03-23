@@ -91,26 +91,31 @@ model Owner {
   tenant        Tenant         @relation(fields: [tenantId], references: [id])
   properties    Property[]
   disbursements Disbursement[]
+  userId        String?        @unique
+  user          User?          @relation(fields: [userId], references: [id])
 
   @@index([tenantId])
 }
 
 model User {
-  id          String    @id @default(uuid())
-  tenantId    String // Critical multi-tenancy enforcement 
-  email       String    @unique
-  password    String // Hashed
-  firstName   String?
-  lastName    String?
-  role        UserRole
-  isActive    Boolean   @default(true)
-  lastLoginAt DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  deletedAt   DateTime?
+  id                     String    @id @default(uuid())
+  tenantId               String // Critical multi-tenancy enforcement 
+  email                  String    @unique
+  password               String // Hashed
+  firstName              String?
+  lastName               String?
+  role                   UserRole
+  isActive               Boolean   @default(true)
+  lastLoginAt            DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+  deletedAt              DateTime?
+  passwordResetToken     String?   @unique
+  passwordResetExpiresAt DateTime?
 
   tenant    Tenant     @relation(fields: [tenantId], references: [id])
   auditLogs AuditLog[]
+  owner     Owner? // <-- ADDED: Relation to owner
 
   @@index([tenantId])
 }

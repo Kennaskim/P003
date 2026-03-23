@@ -34,3 +34,6 @@ jobs:
 
       - name: Build API
         run: npm run build --workspace=apps/api
+
+      - name: Run Tests
+        run: npm run test --workspaces

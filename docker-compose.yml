@@ -4,11 +4,11 @@ services:
   postgres:
     image: postgres:15-alpine
     environment:
-      POSTGRES_USER: kefi
-      POSTGRES_PASSWORD: kefi123
-      POSTGRES_DB: rental_db
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-rental_db}
     ports:
-      - "5433:5432"
+      - "5433:5432" # Mapped to 5433 externally, but 5432 internally
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
@@ -19,6 +19,27 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    restart: unless-stopped
+
+  api:
+    build: 
+      context: ./apps/api
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      # Note: Uses the internal Docker network hostname ('postgres' and 'redis') and internal port 5432
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=${JWT_SECRET}
+      - FRONTEND_URL=${FRONTEND_URL}
+      - AT_API_KEY=${AT_API_KEY}
+      - AT_USERNAME=${AT_USERNAME}
+      - AT_SENDER_ID=${AT_SENDER_ID}
+      - RESEND_API_KEY=${RESEND_API_KEY}
+    depends_on:
+      - postgres
+      - redis
     restart: unless-stopped
 
 volumes:

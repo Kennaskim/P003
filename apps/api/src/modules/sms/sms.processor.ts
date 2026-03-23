@@ -28,12 +28,12 @@ export class SmsProcessor extends WorkerHost {
     private async handleInvoiceSms(data: {
         renterName: string;
         phone: string;
-        amountInCents: number;
+        amountInKes: number;
         dueDate: string;
         unitName: string;
     }) {
         // Strict formatting rule: Convert integer cents back to KES for display
-        const amountInKes = Math.floor(data.amountInCents / 100).toLocaleString('en-KE');
+        const amountInKes = Math.floor(data.amountInKes).toLocaleString('en-KE');
         const formattedDate = new Date(data.dueDate).toLocaleDateString('en-KE', {
             day: 'numeric', month: 'short', year: 'numeric'
         });
