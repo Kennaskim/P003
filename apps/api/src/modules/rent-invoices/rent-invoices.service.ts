@@ -14,8 +14,25 @@ export class RentInvoicesService {
 
         if (!agreement) throw new NotFoundException('ACTIVE_RENTAL_AGREEMENT_NOT_FOUND');
 
+        // Auto-generate invoiceNumber and period
+        const dueDate = new Date(dto.dueDate);
+        const period = `${dueDate.getFullYear()}-${String(dueDate.getMonth() + 1).padStart(2, '0')}`;
+
+        // Count existing invoices in this period to generate a sequential number
+        const existingCount = await this.prisma.tenantClient.rentInvoice.count({
+            where: {
+                period,
+            },
+        });
+
+        const invoiceNumber = `INV-${period}-${String(existingCount + 1).padStart(3, '0')}`;
+
         return this.prisma.tenantClient.rentInvoice.create({
-            data: dto,
+            data: {
+                ...dto,
+                invoiceNumber,
+                period,
+            },
         });
     }
 

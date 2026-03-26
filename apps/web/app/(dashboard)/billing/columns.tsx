@@ -4,13 +4,14 @@ import { useState } from "react"
 import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Smartphone, Loader2 } from "lucide-react"
+import { Smartphone, Loader2, CheckCircle2, XCircle, Clock } from "lucide-react"
 import { api } from "@/lib/axios"
 import { toast } from "sonner"
+import { usePaymentStatus } from "@/hooks/usePaymentStatus"
 
 export type Invoice = {
     id: string
-    amount: number // In Cents
+    amount: number // In KES integers (e.g., 15000 = KES 15,000)
     dueDate: string
     isPaid: boolean
     lateFeeApplied: number
@@ -22,6 +23,7 @@ export type Invoice = {
 
 const StkPushAction = ({ invoice }: { invoice: Invoice }) => {
     const [isLoading, setIsLoading] = useState(false);
+    const { status: paymentStatus, startPolling } = usePaymentStatus();
 
     const handlePush = async () => {
         setIsLoading(true);
@@ -29,13 +31,19 @@ const StkPushAction = ({ invoice }: { invoice: Invoice }) => {
             const payload = {
                 rentInvoiceId: invoice.id,
                 phone: invoice.rentalAgreement.renter.phone,
-                amountInCents: invoice.amount // Already in integer cents!
+                amount: invoice.amount, // KES integer — NOT cents
             };
 
             const response = await api.post('/mpesa/stk-push', payload);
 
             if (response.data.success) {
                 toast.success(`Payment prompt sent to ${invoice.rentalAgreement.renter.phone}!`);
+
+                // Start polling for payment confirmation
+                const checkoutRequestId = response.data.data?.CheckoutRequestID;
+                if (checkoutRequestId) {
+                    startPolling(checkoutRequestId);
+                }
             }
         } catch (error: any) {
             toast.error(error.response?.data?.message || "Failed to trigger M-Pesa prompt.");
@@ -45,6 +53,45 @@ const StkPushAction = ({ invoice }: { invoice: Invoice }) => {
     };
 
     if (invoice.isPaid) return <span className="text-sm text-muted-foreground mr-4">Settled</span>;
+
+    // Show payment polling status
+    if (paymentStatus === 'polling') {
+        return (
+            <div className="flex items-center gap-2 text-sm text-amber-600 mr-2">
+                <Clock className="h-4 w-4 animate-pulse" />
+                <span>Check your phone…</span>
+            </div>
+        );
+    }
+
+    if (paymentStatus === 'completed') {
+        return (
+            <div className="flex items-center gap-2 text-sm text-green-600 mr-2">
+                <CheckCircle2 className="h-4 w-4" />
+                <span>Payment confirmed!</span>
+            </div>
+        );
+    }
+
+    if (paymentStatus === 'failed') {
+        return (
+            <div className="flex items-center gap-2 text-sm text-red-600 mr-2">
+                <XCircle className="h-4 w-4" />
+                <span>Payment failed</span>
+            </div>
+        );
+    }
+
+    if (paymentStatus === 'timeout') {
+        return (
+            <div className="flex items-center gap-2 mr-2">
+                <span className="text-sm text-gray-500">Timed out</span>
+                <Button variant="outline" size="sm" onClick={handlePush} className="text-green-700 border-green-200 hover:bg-green-50">
+                    Retry
+                </Button>
+            </div>
+        );
+    }
 
     return (
         <Button
@@ -79,10 +126,10 @@ export const columns: ColumnDef<Invoice>[] = [
         accessorKey: "amount",
         header: () => <div className="text-right">Amount (KES)</div>,
         cell: ({ row }) => {
-            // Safely convert back to readable KES
-            const amountInKes = row.getValue<number>("amount") / 100;
+            // Amount is stored as KES integers (e.g., 15000 = KES 15,000)
+            const amount = row.getValue<number>("amount");
             return <div className="text-right font-medium">
-                {new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", minimumFractionDigits: 0 }).format(amountInKes)}
+                {new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", minimumFractionDigits: 0 }).format(amount)}
             </div>
         }
     },
@@ -109,7 +156,6 @@ export const columns: ColumnDef<Invoice>[] = [
         cell: ({ row }) => {
             return (
                 <div className="flex justify-end items-center">
-                    {/* Render the smart STK push button */}
                     <StkPushAction invoice={row.original} />
                 </div>
             )

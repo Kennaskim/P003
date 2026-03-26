@@ -32,7 +32,7 @@ export class SmsProcessor extends WorkerHost {
         dueDate: string;
         unitName: string;
     }) {
-        // Strict formatting rule: Convert integer cents back to KES for display
+        // Format integer KES amount for display
         const amountInKes = Math.floor(data.amountInKes).toLocaleString('en-KE');
         const formattedDate = new Date(data.dueDate).toLocaleDateString('en-KE', {
             day: 'numeric', month: 'short', year: 'numeric'

@@ -45,8 +45,7 @@ export class UsersService {
         const body = `Hello ${dto.firstName},<br><br>You've been invited to join our management system. Your temporary password is: <b>${tempPassword}</b><br><br>Please login and change it immediately.`;
         await this.notificationsService.sendEmail(dto.email, subject, body);
 
-        // 4. TODO: Send invitation email via Resend with tempPassword and login link
-        // await this.resendService.sendTeamInviteEmail(dto.email, tempPassword);
+        // Email sent above via notificationsService
 
         return user;
     }
