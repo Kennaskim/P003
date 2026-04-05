@@ -11,7 +11,6 @@ export class BillingCronService {
 
     constructor(
         private prisma: PrismaService,
-        // Using BullMQ instead of EventEmitter2
         @InjectQueue('sms') private readonly smsQueue: Queue
     ) { }
 
@@ -19,7 +18,6 @@ export class BillingCronService {
     async generateMonthlyInvoices() {
         this.logger.log('Starting automated monthly rent invoice generation...');
 
-        // Query active agreements
         const activeAgreements = await this.prisma.client.rentalAgreement.findMany({
             where: { isActive: true },
             include: {
@@ -46,16 +44,25 @@ export class BillingCronService {
                     });
 
                     if (!existingInvoice) {
+                        const period = `${dueDate.getFullYear()}-${String(dueDate.getMonth() + 1).padStart(2, '0')}`;
+
+                        const count = await this.prisma.tenantClient.rentInvoice.count({
+                            where: { period }
+                        });
+
+                        const invoiceNumber = `INV-${period}-${String(count + 1).padStart(3, '0')}`;
+
                         await this.prisma.tenantClient.rentInvoice.create({
                             data: {
                                 rentalAgreementId: agreement.id,
                                 amount: agreement.rentAmount,
                                 dueDate: dueDate.toISOString(),
+                                invoiceNumber,
+                                period,
                             },
                         });
                         successCount++;
 
-                        // Push the SMS notification job to BullMQ
                         await this.smsQueue.add('send-invoice-sms', {
                             renterName: agreement.renter.firstName,
                             phone: agreement.renter.phone,

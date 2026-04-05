@@ -4,7 +4,24 @@ import { useState } from "react"
 import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Smartphone, Loader2, CheckCircle2, XCircle, Clock } from "lucide-react"
+import {
+    Smartphone,
+    Loader2,
+    CheckCircle2,
+    XCircle,
+    Clock,
+    MoreHorizontal,
+    PlusCircle
+} from "lucide-react"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu"
+import { RecordPaymentDialog } from "@/components/billing/record-payment-dialog"
 import { api } from "@/lib/axios"
 import { toast } from "sonner"
 import { usePaymentStatus } from "@/hooks/usePaymentStatus"
@@ -31,7 +48,7 @@ const StkPushAction = ({ invoice }: { invoice: Invoice }) => {
             const payload = {
                 rentInvoiceId: invoice.id,
                 phone: invoice.rentalAgreement.renter.phone,
-                amount: invoice.amount, // KES integer — NOT cents
+                amount: invoice.amount,
             };
 
             const response = await api.post('/mpesa/stk-push', payload);
@@ -111,6 +128,53 @@ const StkPushAction = ({ invoice }: { invoice: Invoice }) => {
     );
 };
 
+// New composite component handling both STK Push and the Manual Payment Dropdown Menu
+const InvoiceRowActions = ({ invoice }: { invoice: Invoice }) => {
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+
+    return (
+        <div className="flex justify-end items-center gap-2">
+            <StkPushAction invoice={invoice} />
+
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    <DropdownMenuItem onClick={() => navigator.clipboard.writeText(invoice.id)}>
+                        Copy Invoice ID
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+
+                    {/* Only show Record Payment if the invoice is NOT already paid */}
+                    {!invoice.isPaid && (
+                        <DropdownMenuItem
+                            onClick={() => setIsPaymentModalOpen(true)}
+                            className="text-green-600 font-medium cursor-pointer"
+                        >
+                            <PlusCircle className="mr-2 h-4 w-4" />
+                            Record Payment
+                        </DropdownMenuItem>
+                    )}
+
+                    <DropdownMenuItem>View Details</DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+
+            <RecordPaymentDialog
+                invoiceId={invoice.id}
+                defaultAmount={invoice.amount}
+                isOpen={isPaymentModalOpen}
+                onClose={() => setIsPaymentModalOpen(false)}
+            />
+        </div>
+    );
+};
+
 export const columns: ColumnDef<Invoice>[] = [
     {
         id: "tenant",
@@ -152,13 +216,7 @@ export const columns: ColumnDef<Invoice>[] = [
     },
     {
         id: "actions",
-        header: () => <div className="text-right">Payment Action</div>,
-        cell: ({ row }) => {
-            return (
-                <div className="flex justify-end items-center">
-                    <StkPushAction invoice={row.original} />
-                </div>
-            )
-        }
+        header: () => <div className="text-right">Actions</div>,
+        cell: ({ row }) => <InvoiceRowActions invoice={row.original} />
     }
 ]

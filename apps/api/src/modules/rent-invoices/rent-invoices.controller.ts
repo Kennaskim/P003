@@ -44,4 +44,13 @@ export class RentInvoicesController {
         const data = await this.rentInvoicesService.update(id, updateDto);
         return { success: true, data };
     }
+    @ApiOperation({ summary: 'Record a manual payment (Cash, Bank, M-Pesa)' })
+    @Post(':id/record-payment')
+    async recordPayment(
+        @Param('id') id: string,
+        @Body() dto: { amount: number; method: string; reference?: string }
+    ) {
+        const data = await this.rentInvoicesService.recordPayment(id, dto);
+        return { success: true, data, message: 'Payment recorded successfully' };
+    }
 }

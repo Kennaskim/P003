@@ -66,8 +66,7 @@ export function CreateInvoiceDialog({ agreements = [] }: CreateInvoiceDialogProp
         if (selectedId && agreements.length > 0) {
             const agreement = agreements.find((a: any) => a.id === selectedId);
             if (agreement) {
-                // Convert DB Cents -> UI KES
-                form.setValue("amount", agreement.rentAmount / 100);
+                form.setValue("amount", agreement.rentAmount);
             }
         }
     }, [form.watch("rentalAgreementId"), agreements, form]);
@@ -77,7 +76,7 @@ export function CreateInvoiceDialog({ agreements = [] }: CreateInvoiceDialogProp
         try {
             const payload = {
                 ...values,
-                amount: Math.floor(values.amount * 100), // Convert UI KES -> DB Cents
+                amount: Math.floor(values.amount),
                 dueDate: new Date(values.dueDate).toISOString(),
             };
             const response = await api.post("/rent-invoices", payload);

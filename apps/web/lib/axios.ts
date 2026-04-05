@@ -36,7 +36,7 @@ api.interceptors.response.use(
                     { withCredentials: true }
                 );
 
-                const newToken = refreshResponse.data.accessToken;
+                const newToken = refreshResponse.data.data.accessToken;
                 // Update Zustand state with new token
                 useAuthStore.setState({ accessToken: newToken });
 

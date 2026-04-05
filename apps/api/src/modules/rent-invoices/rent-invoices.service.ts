@@ -7,7 +7,7 @@ export class RentInvoicesService {
     constructor(private prisma: PrismaService) { }
 
     async create(dto: CreateRentInvoiceDto) {
-        // Checking for 'status: ACTIVE' instead of 'isActive: true' based on the schema
+        // Checking for 'isActive: true' based on the schema
         const agreement = await this.prisma.tenantClient.rentalAgreement.findFirst({
             where: { id: dto.rentalAgreementId, isActive: true },
         });
@@ -74,6 +74,32 @@ export class RentInvoicesService {
         return this.prisma.tenantClient.rentInvoice.update({
             where: { id },
             data: dto,
+        });
+    }
+
+    async recordPayment(id: string, dto: { amount: number; method: string; reference?: string }) {
+        const invoice = await this.findOne(id);
+
+        // Use the tenantClient for the transaction as well to ensure RLS/middleware application
+        return this.prisma.tenantClient.$transaction(async (tx: any) => {
+            const payment = await tx.payment.create({
+                data: {
+                    amount: dto.amount,
+                    method: dto.method,
+                    mpesaReceipt: dto.reference || `MANUAL-${Date.now()}`,
+                    status: 'COMPLETED',
+                    rentInvoiceId: id,
+                    rentalAgreementId: invoice.rentalAgreementId,
+                    tenantId: invoice.tenantId,
+                }
+            });
+
+            await tx.rentInvoice.update({
+                where: { id },
+                data: { isPaid: true, paidAt: new Date() },
+            });
+
+            return payment;
         });
     }
 }

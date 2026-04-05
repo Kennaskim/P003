@@ -52,12 +52,11 @@ export function usePaymentStatus(options: UsePaymentStatusOptions = {}): UsePaym
         if (!checkoutIdRef.current) return;
 
         try {
-            const { data } = await api.get('/payments', {
-                params: { checkoutRequestId: checkoutIdRef.current }
-            });
+            // UPDATED: Poll the specific M-Pesa status endpoint by checkout request ID
+            const { data } = await api.get(`/mpesa/status/${checkoutIdRef.current}`);
 
-            // The API may return an array or single payment
-            const paymentResult = Array.isArray(data) ? data[0] : data?.data?.[0] || data;
+            // UPDATED: The new endpoint returns the direct payment object inside `data.data`
+            const paymentResult = data?.data;
 
             if (paymentResult && paymentResult.status === 'COMPLETED') {
                 setPayment(paymentResult);

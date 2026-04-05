@@ -11,12 +11,15 @@ import { Roles } from '../../common/decorators/roles.decorator.js';
 import { UserRole } from '@prisma/client';
 import { Throttle, SkipThrottle } from '@nestjs/throttler';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { PrismaService } from '../../../prisma/prisma.service.js';
+import { Param, Get } from '@nestjs/common';
 
 @ApiTags('M-Pesa Payments')
 @Controller('mpesa')
 export class MpesaController {
     constructor(
         private readonly mpesaService: MpesaService,
+        private readonly prisma: PrismaService,
         @InjectQueue('mpesa-callbacks') private readonly mpesaQueue: Queue,
     ) { }
 
@@ -47,4 +50,15 @@ export class MpesaController {
         // Safaricom requires this exact response format
         return { ResultCode: 0, ResultDesc: 'Accepted' };
     }
+    @ApiOperation({ summary: 'Check payment status by checkoutRequestId' })
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard)
+    @Get('status/:id')
+    async getStatus(@Param('id') checkoutRequestId: string) {
+        const payment = await this.prisma.tenantClient.payment.findFirst({
+            where: { checkoutRequestId }
+        });
+        return { success: true, data: payment };
+    }
+
 }
