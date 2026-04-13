@@ -6,13 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { DollarSign, Home, AlertCircle, Percent } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 
-// Helper to convert integer cents to KES
-const formatKES = (amountInCents: number) => {
+// Helper to format KES amounts
+const formatKES = (amount: number) => {
     return new Intl.NumberFormat("en-KE", {
         style: "currency",
         currency: "KES",
         minimumFractionDigits: 0,
-    }).format((amountInCents || 0) / 100);
+    }).format(amount || 0);
 };
 
 export default function DashboardPage() {
@@ -74,7 +74,7 @@ export default function DashboardPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-green-600">
-                            {formatKES(financials?.totalCollectedInCents)}
+                            {formatKES(financials?.totalCollectedInKES)}
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
                             Collection rate: {financials?.collectionRate}%
@@ -89,7 +89,7 @@ export default function DashboardPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-red-600">
-                            {formatKES(financials?.totalPendingInCents)}
+                            {formatKES(financials?.totalPendingInKES)}
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
                             Unpaid invoices

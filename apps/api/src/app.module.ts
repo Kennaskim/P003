@@ -34,6 +34,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
+import { SubscriptionGuard } from './common/guards/subscription.guard.js';
 
 @Module({
   imports: [
@@ -70,7 +71,6 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
 
     PassportModule,
 
-    // GAP 26 FIXED: Strict JWT Configuration
     JwtModule.registerAsync({
       global: true,
       inject: [ConfigService],
@@ -108,6 +108,10 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard
+    },
+    {
+      provide: APP_GUARD,
+      useClass: SubscriptionGuard
     },
     {
       provide: APP_INTERCEPTOR,

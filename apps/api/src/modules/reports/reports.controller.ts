@@ -74,9 +74,9 @@ export class ReportsController {
         const report = await this.reportsService.getPropertyIncomeReport(propertyId, monthNum, yearNum);
 
         // Calculate basic financials for the PDF
-        const grossIncome = report.summary.expectedIncomeInCents;
+        const grossIncome = report.summary.expectedIncomeInKES;
         const managementFee = Math.floor(grossIncome * 0.10);
-        const expenses = report.summary.arrearsInCents;
+        const expenses = report.summary.arrearsInKES;
         const netPayout = grossIncome - managementFee - expenses;
 
         // Generate the PDF buffer

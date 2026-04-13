@@ -47,9 +47,12 @@ export class RentalAgreementsService {
         return agreement;
     }
 
-    async findAllActive() {
+    async findAll(renterId?: string, isActive?: boolean) {
         return this.prisma.tenantClient.rentalAgreement.findMany({
-            where: { isActive: true },
+            where: {
+                ...(isActive !== undefined ? { isActive } : {}),
+                ...(renterId ? { renterId } : {})
+            },
             include: {
                 unit: { include: { property: true } },
                 renter: true,

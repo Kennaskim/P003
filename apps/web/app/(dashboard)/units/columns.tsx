@@ -28,8 +28,7 @@ export const columns: ColumnDef<Unit>[] = [
         accessorKey: "rentAmount",
         header: "Rent (KES)",
         cell: ({ row }) => {
-            // Divide by 100 because we stored it as cents in the DB!
-            const amountInKes = row.getValue<number>("rentAmount") / 100;
+            const amountInKes = row.getValue<number>("rentAmount");
             return `KES ${amountInKes.toLocaleString()}`;
         }
     },

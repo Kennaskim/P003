@@ -34,10 +34,19 @@ export default function LoginPage() {
         try {
             const response = await api.post("/auth/login", values);
             if (response.data.success) {
+                const user = response.data.data.user;
+                const accessToken = response.data.data.accessToken;
+
                 // Save user and the 15-minute access token to Zustand
-                setAuth(response.data.data.user, response.data.data.accessToken);
+                setAuth(user, accessToken);
                 toast.success("Welcome back!");
-                router.push("/dashboard"); // Redirect to the main app
+
+                // Route users based on their role
+                if (user.role === 'LANDLORD') {
+                    router.push("/owner-portal/dashboard");
+                } else {
+                    router.push("/dashboard"); // Redirect to the main app for managers/admins
+                }
             }
         } catch (error: any) {
             toast.error(error.response?.data?.message || "Invalid email or password");

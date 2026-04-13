@@ -3,17 +3,21 @@ import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/axios';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
 
 export default function RenterDetailsPage() {
     const params = useParams();
     const renterId = params.id as string;
 
-    const { data: renter, isLoading, error } = useQuery({
+    const { data: renter, isLoading: isRenterLoading, error } = useQuery({
         queryKey: ['renter', renterId],
         queryFn: () => api.get(`/renters/${renterId}`).then(res => res.data?.data || res.data)
     });
 
-    const { data: agreements } = useQuery({
+    // Fetches the full history for this specific renter.
+    // By explicitly passing { renterId } and omitting { isActive }, 
+    // the backend will now return both active and terminated agreements.
+    const { data: agreements, isLoading: isAgreementsLoading } = useQuery({
         queryKey: ['renter-agreements', renterId],
         queryFn: () => api.get(`/rental-agreements`, { params: { renterId } }).then(res => res.data?.data || res.data),
         enabled: !!renterId,
@@ -25,7 +29,7 @@ export default function RenterDetailsPage() {
         <div className="p-6 max-w-5xl mx-auto">
             <h1 className="text-2xl font-bold mb-6">Renter Profile</h1>
 
-            {isLoading ? (
+            {isRenterLoading ? (
                 <p className="text-gray-500">Loading renter profile...</p>
             ) : (
                 <div className="space-y-6">
@@ -39,12 +43,16 @@ export default function RenterDetailsPage() {
                                 <p><span className="font-medium text-gray-500">Email:</span> {renter?.email || 'N/A'}</p>
                                 <p><span className="font-medium text-gray-500">ID ({renter?.idType}):</span> {renter?.nationalId}</p>
                                 <p><span className="font-medium text-gray-500">Emergency Contact:</span> {renter?.emergencyContact || 'N/A'}</p>
-                                <p>
+                                <div className="flex items-center gap-2">
                                     <span className="font-medium text-gray-500">Status: </span>
-                                    <span className={`px-2 py-1 rounded text-xs font-medium ${renter?.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : renter?.status === 'EVICTED' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}`}>
+                                    <Badge variant={
+                                        renter?.status === 'ACTIVE' ? 'default' :
+                                            renter?.status === 'EVICTED' ? 'destructive' :
+                                                'secondary'
+                                    }>
                                         {renter?.status}
-                                    </span>
-                                </p>
+                                    </Badge>
+                                </div>
                             </div>
                         </div>
 
@@ -59,7 +67,7 @@ export default function RenterDetailsPage() {
                                     </span>
                                 </div>
                                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                                    <span className="text-sm text-gray-600">Total Agreements</span>
+                                    <span className="text-sm text-gray-600">Total Agreements (History)</span>
                                     <span className="font-bold text-gray-700">
                                         {Array.isArray(agreements) ? agreements.length : 0}
                                     </span>
@@ -71,9 +79,12 @@ export default function RenterDetailsPage() {
                     {/* Rental Agreements */}
                     <div className="bg-white border rounded-lg shadow-sm overflow-hidden">
                         <div className="px-6 py-4 border-b">
-                            <h2 className="text-lg font-semibold">Rental Agreements</h2>
+                            <h2 className="text-lg font-semibold">Rental History</h2>
                         </div>
-                        {!Array.isArray(agreements) || agreements.length === 0 ? (
+
+                        {isAgreementsLoading ? (
+                            <div className="p-6 text-center text-gray-400">Loading history...</div>
+                        ) : !Array.isArray(agreements) || agreements.length === 0 ? (
                             <div className="p-6 text-center text-gray-400">No rental agreements found.</div>
                         ) : (
                             <table className="w-full text-sm">
@@ -89,16 +100,16 @@ export default function RenterDetailsPage() {
                                     {agreements.map((ag: any) => (
                                         <tr key={ag.id} className="hover:bg-gray-50">
                                             <td className="px-6 py-4">
-                                                <Link href={`/agreements/${ag.id}`} className="text-blue-600 hover:underline">
+                                                <Link href={`/agreements/${ag.id}`} className="text-blue-600 hover:underline font-medium">
                                                     {ag.unit?.name || ag.unitId}
                                                 </Link>
                                             </td>
                                             <td className="px-6 py-4">KES {ag.rentAmount?.toLocaleString('en-KE')}</td>
                                             <td className="px-6 py-4">{new Date(ag.startDate).toLocaleDateString()}</td>
                                             <td className="px-6 py-4">
-                                                <span className={`px-2 py-1 rounded text-xs font-medium ${ag.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                                    {ag.isActive ? 'ACTIVE' : 'INACTIVE'}
-                                                </span>
+                                                <Badge variant={ag.isActive ? "default" : "secondary"}>
+                                                    {ag.isActive ? 'Active' : 'Terminated'}
+                                                </Badge>
                                             </td>
                                         </tr>
                                     ))}

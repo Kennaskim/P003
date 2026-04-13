@@ -99,7 +99,7 @@ describe('Rental Management SaaS - Core Loop (e2e)', () => {
         .send({
           propertyId: propertyId,
           name: 'A1 - Bedsitter',
-          rentAmount: 1500000, // 15,000 KES in cents
+          rentAmount: 15000, // KES 15,000
         })
         .expect(201);
 

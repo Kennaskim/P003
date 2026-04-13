@@ -1,6 +1,7 @@
 "use client";
 
 import { api } from "@/lib/axios";
+import { getRentalAgreements } from "@/lib/api/agreements";
 import { CreateAgreementDialog } from "@/components/agreements/create-agreement-dialog";
 import {
     Table,
@@ -11,29 +12,26 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { User, Home, XCircle } from "lucide-react";
+import { User, Home, XCircle, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
 
-// ✅ Divide by 100 because values are stored as integer CENTS in the DB
-const formatKES = (amountInCents: number) => {
+const formatKES = (amountInKES: number) => {
     return new Intl.NumberFormat("en-KE", {
         style: "currency",
         currency: "KES",
         minimumFractionDigits: 0
-    }).format(amountInCents / 100);
+    }).format(amountInKES);
 };
 
 export default function AgreementsPage() {
     const queryClient = useQueryClient();
 
-    // 1. Fetch Active Agreements
+    // 1. Fetch Active Agreements using the new API client with the isActive filter
     const { data: agreements = [], isLoading } = useQuery({
-        queryKey: ['agreements'],
-        queryFn: async () => {
-            const response = await api.get("/rental-agreements");
-            return response.data.data;
-        }
+        queryKey: ['agreements', 'active'],
+        queryFn: () => getRentalAgreements({ isActive: true })
     });
 
     // 2. Fetch Vacant Units (for the dialog)
@@ -62,7 +60,7 @@ export default function AgreementsPage() {
             const response = await api.patch(`/rental-agreements/${id}/terminate`);
             if (response.data.success) {
                 toast.success("Agreement terminated successfully.");
-                // ✅ Tell React Query to refresh the tables instantly
+                // Invalidate both the specific active list and the general agreements cache
                 queryClient.invalidateQueries({ queryKey: ['agreements'] });
                 queryClient.invalidateQueries({ queryKey: ['units'] });
             }
@@ -80,7 +78,6 @@ export default function AgreementsPage() {
                         Manage active contracts between your properties and renters.
                     </p>
                 </div>
-                {/* ✅ Pass the fetched units and renters down to the dialog */}
                 <CreateAgreementDialog units={units} renters={renters} />
             </div>
 
@@ -133,9 +130,16 @@ export default function AgreementsPage() {
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <Button variant="ghost" size="sm" onClick={() => handleTerminate(agreement.id)} className="text-red-600 hover:text-red-700 hover:bg-red-50">
-                                            <XCircle className="h-4 w-4 mr-1" /> Terminate
-                                        </Button>
+                                        <div className="flex justify-end gap-2">
+                                            <Link href={`/agreements/${agreement.id}`}>
+                                                <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50">
+                                                    <Eye className="h-4 w-4 mr-1" /> View
+                                                </Button>
+                                            </Link>
+                                            <Button variant="ghost" size="sm" onClick={() => handleTerminate(agreement.id)} className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                                                <XCircle className="h-4 w-4 mr-1" /> Terminate
+                                            </Button>
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ))

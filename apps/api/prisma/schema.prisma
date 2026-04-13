@@ -51,15 +51,16 @@ enum MaintenanceStatus {
 // ================= Models ================= //
 
 model Tenant {
-  id                 String    @id @default(uuid())
-  name               String
-  email              String    @unique
-  phone              String? // E.164 format: +254XXXXXXXXX
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-  deletedAt          DateTime? // Soft delete 
-  subscriptionPlan   String?   @default("STARTER") // e.g., STARTER, PROFESSIONAL, AGENCY
-  subscriptionStatus String?   @default("TRIAL") // e.g., TRIAL, ACTIVE, EXPIRED
+  id                    String    @id @default(uuid())
+  name                  String
+  email                 String    @unique
+  phone                 String? // E.164 format: +254XXXXXXXXX
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  deletedAt             DateTime? // Soft delete 
+  subscriptionPlan      String?   @default("STARTER") // e.g., STARTER, PROFESSIONAL, AGENCY
+  subscriptionStatus    String?   @default("TRIAL") // e.g., TRIAL, ACTIVE, EXPIRED
+  subscriptionExpiresAt DateTime?
 
   users               User[]
   owners              Owner[] // <-- ADDED: Relation to owners
@@ -238,6 +239,7 @@ model Payment {
   amount            Int
   method            String // "MPESA" or "MANUAL"
   mpesaReceipt      String?       @unique // E.g., QWE123RTY
+  paymentReference  String? // <-- ADDED: For manual CASH/BANK payments (not unique)
   checkoutRequestId String?       @unique // Daraja STK Push tracking
   status            PaymentStatus @default(PENDING)
   rawResponse       Json? // Audit log of Daraja response 

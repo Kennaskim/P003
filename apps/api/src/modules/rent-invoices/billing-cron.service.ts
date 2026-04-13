@@ -45,7 +45,6 @@ export class BillingCronService {
 
                     if (!existingInvoice) {
                         const period = `${dueDate.getFullYear()}-${String(dueDate.getMonth() + 1).padStart(2, '0')}`;
-
                         const count = await this.prisma.tenantClient.rentInvoice.count({
                             where: { period }
                         });

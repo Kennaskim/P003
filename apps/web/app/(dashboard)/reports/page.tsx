@@ -21,16 +21,16 @@ interface ReportDetail {
     id: string;
     unit: string;
     renter: string;
-    amountInCents: number;
+    amountInKES: number;
     isPaid: boolean;
 }
 
-const formatKES = (amountInCents: number) => {
+const formatKES = (amount: number) => {
     return new Intl.NumberFormat("en-KE", {
         style: "currency",
         currency: "KES",
         minimumFractionDigits: 0
-    }).format((amountInCents || 0) / 100);
+    }).format(amount || 0);
 };
 
 export default function ReportsPage() {
@@ -175,7 +175,7 @@ export default function ReportsPage() {
                                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{formatKES(reportData.summary.expectedIncomeInCents)}</div>
+                                <div className="text-2xl font-bold">{formatKES(reportData.summary.expectedIncomeInKES)}</div>
                             </CardContent>
                         </Card>
                         <Card>
@@ -184,7 +184,7 @@ export default function ReportsPage() {
                                 <CheckCircle2 className="h-4 w-4 text-green-600" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold text-green-700">{formatKES(reportData.summary.collectedIncomeInCents)}</div>
+                                <div className="text-2xl font-bold text-green-700">{formatKES(reportData.summary.collectedIncomeInKES)}</div>
                                 <p className="text-xs text-muted-foreground mt-1">Collection Rate: {reportData.summary.collectionRate}%</p>
                             </CardContent>
                         </Card>
@@ -194,7 +194,7 @@ export default function ReportsPage() {
                                 <AlertCircle className="h-4 w-4 text-red-600" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold text-red-700">{formatKES(reportData.summary.arrearsInCents)}</div>
+                                <div className="text-2xl font-bold text-red-700">{formatKES(reportData.summary.arrearsInKES)}</div>
                             </CardContent>
                         </Card>
                     </div>
@@ -221,7 +221,7 @@ export default function ReportsPage() {
                                         <TableRow key={item.id}>
                                             <TableCell className="font-medium">{item.unit}</TableCell>
                                             <TableCell>{item.renter}</TableCell>
-                                            <TableCell className="text-right font-medium">{formatKES(item.amountInCents)}</TableCell>
+                                            <TableCell className="text-right font-medium">{formatKES(item.amountInKES)}</TableCell>
                                             <TableCell>
                                                 <Badge
                                                     variant={item.isPaid ? "default" : "destructive"}

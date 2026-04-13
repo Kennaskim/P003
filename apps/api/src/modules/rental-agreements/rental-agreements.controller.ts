@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards, UseInterceptors, Patch } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, UseInterceptors, Patch, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { RentalAgreementsService } from './rental-agreements.service.js';
 import { CreateRentalAgreementDto } from './dto/rental-agreement.dto.js';
@@ -24,10 +24,14 @@ export class RentalAgreementsController {
         return { success: true, data, message: 'Rental Agreement created and Unit occupied' };
     }
 
-    @ApiOperation({ summary: 'Get all active rental agreements' })
+    @ApiOperation({ summary: 'Get all rental agreements (with optional filters)' })
     @Get()
-    async findAllActive() {
-        const data = await this.rentalAgreementsService.findAllActive();
+    async findAll(
+        @Query('renterId') renterId?: string,
+        @Query('isActive') isActive?: string
+    ) {
+        const activeFilter = isActive === 'false' ? false : isActive === 'true' ? true : undefined;
+        const data = await this.rentalAgreementsService.findAll(renterId, activeFilter);
         return { success: true, data };
     }
 

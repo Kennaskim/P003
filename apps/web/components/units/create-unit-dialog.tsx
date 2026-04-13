@@ -43,7 +43,7 @@ export function CreateUnitDialog({ properties }: CreateUnitDialogProps) {
         try {
             const payload = {
                 ...values,
-                rentAmount: Math.floor(values.rentAmount * 100), // Cents conversion
+                rentAmount: Math.floor(values.rentAmount), // Already in KES
             };
 
             const response = await api.post("/units", payload);

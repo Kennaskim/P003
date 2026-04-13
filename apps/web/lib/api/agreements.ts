@@ -1,28 +1,43 @@
 import api from '../axios';
 
 export const agreementsApi = {
-    getAll: async () => {
-        const { data } = await api.get('/agreements');
-        return data;
+    getAll: async (params?: { renterId?: string; isActive?: boolean }) => {
+        const { data } = await api.get('/rental-agreements', { params });
+        return data.data || data;
     },
+
     getById: async (id: string) => {
-        const { data } = await api.get(`/agreements/${id}`);
-        return data;
+        const { data } = await api.get(`/rental-agreements/${id}`);
+        return data.data || data;
     },
+
     create: async (payload: any) => {
-        const { data } = await api.post('/agreements', payload);
-        return data;
+        const { data } = await api.post('/rental-agreements', payload);
+        return data.data || data;
     },
+
     update: async (id: string, payload: any) => {
-        const { data } = await api.patch(`/agreements/${id}`, payload);
-        return data;
+        // Note: A generic PATCH /rental-agreements/:id endpoint is not currently in your backend controller. 
+        // You will need to add it to rental-agreements.controller.ts for this to work.
+        const { data } = await api.patch(`/rental-agreements/${id}`, payload);
+        return data.data || data;
     },
-    terminate: async (id: string, payload: { terminationDate: string, reason?: string }) => {
-        const { data } = await api.post(`/agreements/${id}/terminate`, payload);
-        return data;
+
+    terminate: async (id: string) => {
+        // Backend uses PATCH and doesn't currently require a payload body for termination
+        const { data } = await api.patch(`/rental-agreements/${id}/terminate`);
+        return data.data || data;
     },
+
     downloadPdf: async (id: string) => {
-        const { data } = await api.get(`/agreements/${id}/pdf`, { responseType: 'blob' });
+        // Note: GET /rental-agreements/:id/pdf needs to be implemented on the backend!
+        const { data } = await api.get(`/rental-agreements/${id}/pdf`, { responseType: 'blob' });
         return data;
     }
+};
+
+// Maintained for backward compatibility with pages using the standalone function
+export const getRentalAgreements = async (params?: { renterId?: string; isActive?: boolean }) => {
+    const response = await api.get('/rental-agreements', { params });
+    return response.data.data;
 };

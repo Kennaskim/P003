@@ -7,7 +7,7 @@ export class CreateRentInvoiceDto {
     @IsNotEmpty()
     rentalAgreementId: string;
 
-    @ApiProperty({ example: 1500000, description: 'Amount strictly in CENTS (e.g., KES 15,000 = 1500000)' })
+    @ApiProperty({ example: 15000, description: 'Amount in KES (e.g., KES 15,000 = 15000)' })
     @IsInt()
     @Min(0)
     amount: number;
@@ -24,7 +24,7 @@ export class UpdateRentInvoiceDto extends PartialType(CreateRentInvoiceDto) {
     @IsOptional()
     isPaid?: boolean;
 
-    @ApiPropertyOptional({ example: 50000, description: 'Late fee strictly in CENTS' })
+    @ApiPropertyOptional({ example: 500, description: 'Late fee in KES' })
     @IsInt()
     @Min(0)
     @IsOptional()

@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -29,6 +31,11 @@ const mainNavigation = [
     { name: "Settings", href: "/settings", icon: Settings },
 ];
 
+const ownerNavigation = [
+    { name: "Portfolio Overview", href: "/owner-portal/dashboard", icon: LayoutDashboard },
+    { name: "Settings", href: "/settings", icon: Settings },
+];
+
 const adminNavigation = [
     { name: "SaaS Tenants", href: "/admin/tenants", icon: Building2 },
     { name: "Audit Logs", href: "/admin/audit-logs", icon: ShieldAlert },
@@ -38,6 +45,10 @@ export default function Sidebar() {
     const pathname = usePathname();
     const user = useAuthStore((state) => state.user);
     const isSuperAdmin = user?.role === "SUPER_ADMIN";
+    const isLandlord = user?.role === "LANDLORD";
+
+    // Determine which primary navigation to show based on user role
+    const activeNavigation = isLandlord ? ownerNavigation : mainNavigation;
 
     return (
         <div className="flex h-full w-64 flex-col border-r bg-white">
@@ -46,8 +57,8 @@ export default function Sidebar() {
             </div>
             <div className="flex-1 overflow-y-auto py-4">
                 <nav className="space-y-1 px-3">
-                    {/* STANDARD NAVIGATION */}
-                    {mainNavigation.map((item) => {
+                    {/* STANDARD / OWNER NAVIGATION */}
+                    {activeNavigation.map((item) => {
                         const isActive = pathname.startsWith(item.href);
                         return (
                             <Link

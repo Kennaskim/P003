@@ -39,9 +39,9 @@ export class ReportsService {
         });
 
         return {
-            totalExpectedInCents: totalExpected,
-            totalCollectedInCents: totalCollected,
-            totalPendingInCents: totalPending,
+            totalExpectedInKES: totalExpected,
+            totalCollectedInKES: totalCollected,
+            totalPendingInKES: totalPending,
             collectionRate: totalExpected > 0 ? ((totalCollected / totalExpected) * 100).toFixed(2) : '0.00',
         };
     }
@@ -117,8 +117,8 @@ export class ReportsService {
             orderBy: { dueDate: 'asc' }
         });
 
-        let expectedIncomeCents = 0;
-        let collectedIncomeCents = 0;
+        let expectedIncomeKES = 0;
+        let collectedIncomeKES = 0;
 
         const details = invoices.map((inv: {
             id: string;
@@ -129,14 +129,14 @@ export class ReportsService {
                 renter: { firstName: string; lastName: string }
             }
         }) => {
-            expectedIncomeCents += inv.amount;
-            if (inv.isPaid) collectedIncomeCents += inv.amount;
+            expectedIncomeKES += inv.amount;
+            if (inv.isPaid) collectedIncomeKES += inv.amount;
 
             return {
                 id: inv.id,
                 unit: inv.rentalAgreement.unit.name,
                 renter: `${inv.rentalAgreement.renter.firstName} ${inv.rentalAgreement.renter.lastName}`,
-                amountInCents: inv.amount,
+                amountInKES: inv.amount,
                 isPaid: inv.isPaid,
             };
         });
@@ -145,10 +145,10 @@ export class ReportsService {
             property: { id: property.id, name: property.name },
             period: { month, year },
             summary: {
-                expectedIncomeInCents: expectedIncomeCents,
-                collectedIncomeInCents: collectedIncomeCents,
-                arrearsInCents: expectedIncomeCents - collectedIncomeCents,
-                collectionRate: expectedIncomeCents > 0 ? Number(((collectedIncomeCents / expectedIncomeCents) * 100).toFixed(1)) : 0,
+                expectedIncomeInKES: expectedIncomeKES,
+                collectedIncomeInKES: collectedIncomeKES,
+                arrearsInKES: expectedIncomeKES - collectedIncomeKES,
+                collectionRate: expectedIncomeKES > 0 ? Number(((collectedIncomeKES / expectedIncomeKES) * 100).toFixed(1)) : 0,
             },
             details,
         };

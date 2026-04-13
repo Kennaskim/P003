@@ -15,13 +15,13 @@ export default function AgreementDetailsPage() {
 
     const { data: invoices } = useQuery({
         queryKey: ['agreement-invoices', agreementId],
-        queryFn: () => api.get(`/invoices`, { params: { rentalAgreementId: agreementId } }).then(res => res.data?.data || res.data),
+        queryFn: () => api.get(`/rent-invoices`, { params: { rentalAgreementId: agreementId } }).then(res => res.data?.data || res.data),
         enabled: !!agreementId,
     });
 
     const { data: payments } = useQuery({
         queryKey: ['agreement-payments', agreementId],
-        queryFn: () => api.get(`/payments`, { params: { rentalAgreementId: agreementId } }).then(res => res.data?.data || res.data),
+        queryFn: () => api.get(`/mpesa`, { params: { rentalAgreementId: agreementId } }).then(res => res.data?.data || res.data),
         enabled: !!agreementId,
     });
 
@@ -143,12 +143,11 @@ export default function AgreementDetailsPage() {
                                             <td className="px-6 py-4">{pmt.method}</td>
                                             <td className="px-6 py-4 text-gray-500">{pmt.mpesaReceipt || '—'}</td>
                                             <td className="px-6 py-4">
-                                                <span className={`px-2 py-1 rounded text-xs font-medium ${
-                                                    pmt.status === 'COMPLETED' ? 'bg-green-100 text-green-800' :
-                                                    pmt.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                                                    pmt.status === 'FAILED' ? 'bg-red-100 text-red-800' :
-                                                    'bg-gray-100 text-gray-800'
-                                                }`}>
+                                                <span className={`px-2 py-1 rounded text-xs font-medium ${pmt.status === 'COMPLETED' ? 'bg-green-100 text-green-800' :
+                                                        pmt.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                                                            pmt.status === 'FAILED' ? 'bg-red-100 text-red-800' :
+                                                                'bg-gray-100 text-gray-800'
+                                                    }`}>
                                                     {pmt.status}
                                                 </span>
                                             </td>

@@ -12,7 +12,7 @@ import { UserRole } from '@prisma/client';
 import { Throttle, SkipThrottle } from '@nestjs/throttler';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { PrismaService } from '../../../prisma/prisma.service.js';
-import { Param, Get } from '@nestjs/common';
+import { Param, Get, Query } from '@nestjs/common';
 
 @ApiTags('M-Pesa Payments')
 @Controller('mpesa')
@@ -59,6 +59,17 @@ export class MpesaController {
             where: { checkoutRequestId }
         });
         return { success: true, data: payment };
+    }
+    @ApiOperation({ summary: 'Get all payments (optionally filtered by rentalAgreementId)' })
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard)
+    @Get()
+    async getPayments(@Query('rentalAgreementId') rentalAgreementId?: string) {
+        const payments = await this.prisma.tenantClient.payment.findMany({
+            where: rentalAgreementId ? { rentalAgreementId } : {},
+            orderBy: { createdAt: 'desc' }
+        });
+        return { success: true, data: payments };
     }
 
 }
